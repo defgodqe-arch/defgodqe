@@ -1,0 +1,67 @@
+name: Fix brand logo
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix-logo:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Replace missing logo with inline SVG
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = '''          <img
+            src="assets/Screenshot_2026-02-27_164030.png"
+            alt="defgodqe logo"
+            class="h-full w-full object-cover"
+          />'''
+          new = '''          <svg
+            viewBox="0 0 48 48"
+            class="h-full w-full p-1.5"
+            role="img"
+            aria-label="defgodqe logo"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="dfLogoGradient" x1="8" y1="8" x2="40" y2="40">
+                <stop offset="0" stop-color="#fff7b2" />
+                <stop offset="0.45" stop-color="#facc15" />
+                <stop offset="1" stop-color="#ca8a04" />
+              </linearGradient>
+            </defs>
+            <circle cx="24" cy="24" r="20" fill="url(#dfLogoGradient)" opacity=".16" />
+            <circle cx="24" cy="24" r="15" fill="none" stroke="url(#dfLogoGradient)" stroke-width="3" />
+            <path d="M18 13h7.5a11 11 0 0 1 0 22H18V13Zm6.8 5H23v12h1.8a6 6 0 0 0 0-12Z" fill="url(#dfLogoGradient)" />
+            <path d="M33.5 9.5 35 13l3.5 1.5L35 16l-1.5 3.5L32 16l-3.5-1.5L32 13l1.5-3.5Z" fill="#fff7b2" />
+          </svg>'''
+          if old not in s:
+              raise SystemExit('Expected broken logo markup was not found')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+
+      - name: Commit logo fix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Replace missing top-left logo with inline SVG"
+          git push
+
+      - name: Remove temporary workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/fix-brand-logo.yml
+          git add .github/workflows/fix-brand-logo.yml
+          git diff --cached --quiet || git commit -m "Remove temporary logo fix workflow"
+          git push
