@@ -52,50 +52,28 @@
        ======================================================== */
     .sidebar {
       width:292px !important;
-      background:
-        radial-gradient(circle at 15% 0%, rgba(250,204,21,.09), transparent 30%),
-        linear-gradient(180deg,#0b1019 0%,#080c13 100%) !important;
+      flex:0 0 292px !important;
+      background:radial-gradient(circle at 15% 0%,rgba(250,204,21,.09),transparent 30%),linear-gradient(180deg,#0b1019 0%,#080c13 100%) !important;
       border-right:1px solid rgba(255,255,255,.07) !important;
       box-shadow:18px 0 55px rgba(0,0,0,.18);
       position:relative;
       overflow:hidden;
+      z-index:50;
     }
-    .sidebar::before {
-      content:""; position:absolute; left:0; top:0; width:2px; height:100%;
-      background:linear-gradient(180deg,#facc15,rgba(250,204,21,.08) 42%,transparent 85%);
-      opacity:.8; pointer-events:none;
-    }
-    .sidebar > div:first-child {
-      position:relative; margin:10px 10px 8px; padding:11px !important;
-      min-height:62px; border:1px solid rgba(255,255,255,.07); border-radius:16px;
-      background:rgba(255,255,255,.035); box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
-    }
-    .sidebar > div:first-child > div:first-child {
-      width:42px !important; height:42px !important; border-radius:13px !important;
-      background:linear-gradient(145deg,#facc15,#ca8a04) !important;
-      box-shadow:0 0 24px rgba(250,204,21,.18); position:relative;
-    }
+    .sidebar::before { content:""; position:absolute; left:0; top:0; width:2px; height:100%; background:linear-gradient(180deg,#facc15,rgba(250,204,21,.08) 42%,transparent 85%); opacity:.8; pointer-events:none; }
+    .sidebar > div:first-child { position:relative; margin:10px 10px 8px; padding:11px !important; min-height:62px; border:1px solid rgba(255,255,255,.07); border-radius:16px; background:rgba(255,255,255,.035); box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+    .sidebar > div:first-child > div:first-child { width:42px !important; height:42px !important; border-radius:13px !important; background:linear-gradient(145deg,#facc15,#ca8a04) !important; box-shadow:0 0 24px rgba(250,204,21,.18); position:relative; }
     .sidebar > div:first-child > div:first-child img { display:none !important; }
-    .sidebar > div:first-child > div:first-child::after {
-      content:"D"; position:absolute; inset:0; display:grid; place-items:center;
-      color:#090b10; font:900 22px/1 system-ui,sans-serif; letter-spacing:-.06em;
-    }
+    .sidebar > div:first-child > div:first-child::after { content:"D"; position:absolute; inset:0; display:grid; place-items:center; color:#090b10; font:900 22px/1 system-ui,sans-serif; letter-spacing:-.06em; }
     .sidebar > div:first-child .text-sm { font-size:14px !important; letter-spacing:.01em; }
-    .sidebar > div:first-child .text-\[10px\] { color:#64748b !important; margin-top:2px; }
-    #closeSidebar { width:32px; height:32px; display:grid; place-items:center; border-radius:10px; background:rgba(255,255,255,.04); }
+    .sidebar > div:first-child .text-\\[10px\\] { color:#64748b !important; margin-top:2px; }
+    #closeSidebar { width:36px; height:36px; display:grid; place-items:center; border-radius:10px; background:rgba(255,255,255,.04); flex-shrink:0; }
     #closeSidebar:hover { background:rgba(250,204,21,.1); color:#facc15 !important; }
-
-    #newChatBtn {
-      height:48px; justify-content:center; border:1px solid rgba(250,204,21,.3) !important;
-      background:linear-gradient(135deg,rgba(250,204,21,.16),rgba(250,204,21,.06)) !important;
-      box-shadow:0 8px 28px rgba(250,204,21,.07); font-weight:700 !important;
-      letter-spacing:.01em; transition:all .18s ease;
-    }
+    #newChatBtn { min-height:48px; justify-content:center; border:1px solid rgba(250,204,21,.3) !important; background:linear-gradient(135deg,rgba(250,204,21,.16),rgba(250,204,21,.06)) !important; box-shadow:0 8px 28px rgba(250,204,21,.07); font-weight:700 !important; letter-spacing:.01em; transition:all .18s ease; }
     #newChatBtn:hover { border-color:rgba(250,204,21,.55) !important; background:linear-gradient(135deg,rgba(250,204,21,.22),rgba(250,204,21,.09)) !important; transform:translateY(-1px); }
     #newChatBtn i { color:#facc15; }
-
     .sidebar > .mt-4 { margin:20px 14px 7px !important; padding:0 !important; color:#64748b !important; font-size:10px !important; letter-spacing:.16em !important; }
-    #chatList { padding:4px 9px 14px !important; margin-top:0 !important; scrollbar-width:none; }
+    #chatList { padding:4px 9px 14px !important; margin-top:0 !important; scrollbar-width:none; min-height:0; }
     #chatList::-webkit-scrollbar { display:none; }
     #chatList > * { border:1px solid transparent; border-radius:12px; margin:3px 0; transition:all .18s ease; }
     #chatList > *:hover { background:rgba(255,255,255,.055) !important; border-color:rgba(255,255,255,.07); transform:translateX(2px); }
@@ -106,8 +84,58 @@
     #userName { color:#f1f5f9 !important; font-weight:650 !important; }
     #signBtn { border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.045) !important; transition:all .18s ease; }
     #signBtn:hover { border-color:rgba(250,204,21,.35); background:rgba(250,204,21,.1) !important; color:#facc15 !important; }
-    @media (max-width:1023px) { .sidebar { width:292px !important; box-shadow:18px 0 60px rgba(0,0,0,.45); } }
-    @media (max-width:480px) { .sidebar { width:min(292px,88vw) !important; } }
+
+    /* Mobile-first behavior: sidebar becomes a true drawer instead of shrinking the app. */
+    @media (max-width:1023px) {
+      .sidebar {
+        position:fixed !important;
+        left:0 !important;
+        top:0 !important;
+        bottom:0 !important;
+        width:min(310px,88vw) !important;
+        max-width:310px !important;
+        flex:none !important;
+        transform:translate3d(-105%,0,0);
+        transition:transform .24s cubic-bezier(.22,1,.36,1),box-shadow .24s ease !important;
+        box-shadow:20px 0 70px rgba(0,0,0,.6) !important;
+        height:100dvh !important;
+        height:100vh !important;
+        padding-top:env(safe-area-inset-top) !important;
+        padding-bottom:env(safe-area-inset-bottom) !important;
+        touch-action:pan-y;
+        overscroll-behavior:contain;
+      }
+      .sidebar.open {
+        transform:translate3d(0,0,0) !important;
+      }
+      .sidebar > div:first-child { margin-top:max(10px,env(safe-area-inset-top)) !important; }
+      #closeSidebar { min-width:42px; min-height:42px; }
+      #newChatBtn { min-height:50px; }
+      #chatList > * { min-height:44px; }
+      #chatList > * button { min-height:40px; }
+    }
+
+    /* Prevent horizontal overflow and make the chat surface fit narrow phones. */
+    @media (max-width:480px) {
+      html,body { width:100%; max-width:100%; overflow-x:hidden !important; }
+      .sidebar { width:88vw !important; max-width:310px !important; }
+      .sidebar > div:first-child { margin-left:8px; margin-right:8px; }
+      #chatList { padding-left:7px !important; padding-right:7px !important; }
+      #authRow { margin:0 !important; }
+      .df-launch-ring { width:210px; height:210px; }
+      .df-launch-ring-b { width:260px; height:260px; }
+      .df-launch-title { font-size:20px; letter-spacing:.32em; }
+      .df-launch-logo-wrap { width:100px; height:100px; }
+      .df-launch-logo { width:72px; height:72px; }
+    }
+
+    @media (max-height:620px) and (max-width:1023px) {
+      .sidebar > div:first-child { min-height:52px; padding:7px !important; }
+      .sidebar > div:first-child > div:first-child { width:36px !important; height:36px !important; }
+      .sidebar > .mt-4 { margin-top:10px !important; }
+      #newChatBtn { min-height:44px; }
+      #chatList > * { min-height:40px; }
+    }
 
     .orb { position:relative; }
     .orb .df-brand-orb { position:absolute; inset:10%; width:80%; height:80%; object-fit:cover; border-radius:50%; z-index:2; pointer-events:none; user-select:none; box-shadow:0 0 35px rgba(250,204,21,.35); }
@@ -120,7 +148,6 @@
     @keyframes dfGrid { to { transform:perspective(500px) rotateX(60deg) translateY(5%); } }
     @keyframes dfScan { 0%,100% { transform:translateY(-35vh); opacity:0; } 35% { opacity:1; } 65% { opacity:1; } }
     @keyframes dfBlink { 50% { opacity:.25; } }
-    @media (max-width:480px) { .df-launch-ring { width:210px; height:210px; } .df-launch-ring-b { width:260px; height:260px; } .df-launch-title { font-size:20px; letter-spacing:.32em; } }
     @media (prefers-reduced-motion:reduce) { #df-launch * { animation:none!important; } }
   `;
   document.head.appendChild(style);
