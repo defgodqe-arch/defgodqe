@@ -27,7 +27,7 @@
   document.documentElement.appendChild(launch);
 
   const launchLogo = launch.querySelector('.df-launch-logo');
-  if (launchLogo) launchLogo.addEventListener('error', () => logoFallback(launchLogo), { once: true });
+  if (launchLogo) launchLogo.addEventListener('error', () => logoFallback(launchLogo), { once:true });
 
   const style = document.createElement('style');
   style.textContent = `
@@ -46,6 +46,69 @@
     .df-launch-title { margin-top:28px; font:800 24px/1 system-ui,sans-serif; letter-spacing:.45em; color:#fff; text-shadow:0 0 22px rgba(250,204,21,.45); }
     .df-launch-status { margin-top:12px; color:#94a3b8; font:500 11px/1 system-ui,sans-serif; letter-spacing:.18em; }
     .df-launch-status span { display:inline-block; width:6px; height:6px; margin-right:8px; border-radius:50%; background:#facc15; box-shadow:0 0 12px #facc15; animation:dfBlink 1s infinite; }
+
+    /* ========================================================
+       DEFGODQE SIDEBAR REDESIGN
+       ======================================================== */
+    .sidebar {
+      width:292px !important;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(250,204,21,.09), transparent 30%),
+        linear-gradient(180deg,#0b1019 0%,#080c13 100%) !important;
+      border-right:1px solid rgba(255,255,255,.07) !important;
+      box-shadow:18px 0 55px rgba(0,0,0,.18);
+      position:relative;
+      overflow:hidden;
+    }
+    .sidebar::before {
+      content:""; position:absolute; left:0; top:0; width:2px; height:100%;
+      background:linear-gradient(180deg,#facc15,rgba(250,204,21,.08) 42%,transparent 85%);
+      opacity:.8; pointer-events:none;
+    }
+    .sidebar > div:first-child {
+      position:relative; margin:10px 10px 8px; padding:11px !important;
+      min-height:62px; border:1px solid rgba(255,255,255,.07); border-radius:16px;
+      background:rgba(255,255,255,.035); box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .sidebar > div:first-child > div:first-child {
+      width:42px !important; height:42px !important; border-radius:13px !important;
+      background:linear-gradient(145deg,#facc15,#ca8a04) !important;
+      box-shadow:0 0 24px rgba(250,204,21,.18); position:relative;
+    }
+    .sidebar > div:first-child > div:first-child img { display:none !important; }
+    .sidebar > div:first-child > div:first-child::after {
+      content:"D"; position:absolute; inset:0; display:grid; place-items:center;
+      color:#090b10; font:900 22px/1 system-ui,sans-serif; letter-spacing:-.06em;
+    }
+    .sidebar > div:first-child .text-sm { font-size:14px !important; letter-spacing:.01em; }
+    .sidebar > div:first-child .text-\[10px\] { color:#64748b !important; margin-top:2px; }
+    #closeSidebar { width:32px; height:32px; display:grid; place-items:center; border-radius:10px; background:rgba(255,255,255,.04); }
+    #closeSidebar:hover { background:rgba(250,204,21,.1); color:#facc15 !important; }
+
+    #newChatBtn {
+      height:48px; justify-content:center; border:1px solid rgba(250,204,21,.3) !important;
+      background:linear-gradient(135deg,rgba(250,204,21,.16),rgba(250,204,21,.06)) !important;
+      box-shadow:0 8px 28px rgba(250,204,21,.07); font-weight:700 !important;
+      letter-spacing:.01em; transition:all .18s ease;
+    }
+    #newChatBtn:hover { border-color:rgba(250,204,21,.55) !important; background:linear-gradient(135deg,rgba(250,204,21,.22),rgba(250,204,21,.09)) !important; transform:translateY(-1px); }
+    #newChatBtn i { color:#facc15; }
+
+    .sidebar > .mt-4 { margin:20px 14px 7px !important; padding:0 !important; color:#64748b !important; font-size:10px !important; letter-spacing:.16em !important; }
+    #chatList { padding:4px 9px 14px !important; margin-top:0 !important; scrollbar-width:none; }
+    #chatList::-webkit-scrollbar { display:none; }
+    #chatList > * { border:1px solid transparent; border-radius:12px; margin:3px 0; transition:all .18s ease; }
+    #chatList > *:hover { background:rgba(255,255,255,.055) !important; border-color:rgba(255,255,255,.07); transform:translateX(2px); }
+    #chatList > * button { transition:color .18s ease,background .18s ease; }
+    .sidebar .border-t { border-top-color:rgba(255,255,255,.07) !important; background:linear-gradient(180deg,rgba(255,255,255,.015),rgba(0,0,0,.12)); padding:10px !important; }
+    #authRow { padding:9px !important; border:1px solid rgba(255,255,255,.06); background:rgba(255,255,255,.035); border-radius:15px !important; }
+    #authRow > div:first-child { width:36px !important; height:36px !important; background:rgba(250,204,21,.1) !important; border:1px solid rgba(250,204,21,.18); }
+    #userName { color:#f1f5f9 !important; font-weight:650 !important; }
+    #signBtn { border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.045) !important; transition:all .18s ease; }
+    #signBtn:hover { border-color:rgba(250,204,21,.35); background:rgba(250,204,21,.1) !important; color:#facc15 !important; }
+    @media (max-width:1023px) { .sidebar { width:292px !important; box-shadow:18px 0 60px rgba(0,0,0,.45); } }
+    @media (max-width:480px) { .sidebar { width:min(292px,88vw) !important; } }
+
     .orb { position:relative; }
     .orb .df-brand-orb { position:absolute; inset:10%; width:80%; height:80%; object-fit:cover; border-radius:50%; z-index:2; pointer-events:none; user-select:none; box-shadow:0 0 35px rgba(250,204,21,.35); }
     @keyframes dfCoreIn { from { opacity:0; transform:translateY(30px) scale(.92); filter:blur(10px); } to { opacity:1; transform:none; filter:none; } }
@@ -63,7 +126,6 @@
   document.head.appendChild(style);
 
   function applyBranding() {
-    // Only repair the real brand image. Generated/chat images are untouched.
     document.querySelectorAll('img[alt="defgodqe logo"]').forEach(img => {
       if (!img.dataset.dfLogoFallback) img.src = LOGO;
       if (!img.dataset.dfLogoErrorBound) {
@@ -75,15 +137,11 @@
     document.querySelectorAll('.orb').forEach(orb => {
       if (orb.querySelector('.df-brand-orb')) return;
       const img = document.createElement('img');
-      img.className = 'df-brand-orb';
-      img.src = LOGO;
-      img.alt = 'defgodqe AI';
-      img.draggable = false;
+      img.className = 'df-brand-orb'; img.src = LOGO; img.alt = 'defgodqe AI'; img.draggable = false;
       img.addEventListener('error', () => logoFallback(img), { once:true });
       orb.appendChild(img);
     });
 
-    // Use the local icon for browser icons so favicon errors do not affect the app.
     document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(link => { link.href = FALLBACK_LOGO; });
   }
 
