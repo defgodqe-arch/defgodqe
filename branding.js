@@ -1,6 +1,7 @@
 /* defgodqe AI branding + launch animation */
 (() => {
-  const LOGO = 'https://raw.githubusercontent.com/defgodqe-arch/defgodqe-ai/main/Screenshot_2026-02-27_164030.png';
+  // Keep the logo inside the frontend repo so it cannot break when the AI Worker changes.
+  const LOGO = new URL('./icon.svg', document.baseURI).href;
 
   const launch = document.createElement('div');
   launch.id = 'df-launch';
@@ -62,17 +63,28 @@
   document.head.appendChild(style);
 
   function applyBranding() {
+    // Only repair the actual brand/logo elements. Do NOT replace chat/image results.
     document.querySelectorAll('img').forEach(img => {
       const src = img.getAttribute('src') || '';
-      if (src.includes('Screenshot_2026-02-27_164030.png') || src.includes('assets/')) img.src = LOGO;
+      const alt = (img.getAttribute('alt') || '').toLowerCase();
+      if (src.includes('Screenshot_2026-02-27_164030.png') || alt.includes('defgodqe logo')) {
+        img.src = LOGO;
+      }
     });
+
     document.querySelectorAll('.orb').forEach(orb => {
       if (orb.querySelector('.df-brand-orb')) return;
       const img = document.createElement('img');
-      img.className = 'df-brand-orb'; img.src = LOGO; img.alt = 'defgodqe AI'; img.draggable = false;
+      img.className = 'df-brand-orb';
+      img.src = LOGO;
+      img.alt = 'defgodqe AI';
+      img.draggable = false;
       orb.appendChild(img);
     });
-    document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(link => { link.href = LOGO; });
+
+    document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(link => {
+      link.href = LOGO;
+    });
   }
 
   const hideLaunch = () => {
