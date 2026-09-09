@@ -23,7 +23,6 @@ jobs:
           s = p.read_text(encoding='utf-8')
 
           # Remove only the accidental literal "html" line.
-          # Never rebuild or replace the UI.
           if s.startswith('html\n'):
               s = s[5:]
 
@@ -49,6 +48,12 @@ jobs:
               marker = '<script\n    type="module"\n    src="app.js"\n  ></script>'
               if marker in s:
                   s = s.replace(marker, features + '\n\n  ' + marker, 1)
+
+          voice = '<script src="voice-upgrade.js"></script>'
+          if voice not in s:
+              marker = '<script\n    type="module"\n    src="app.js"\n  ></script>'
+              if marker in s:
+                  s = s.replace(marker, marker + '\n\n  ' + voice, 1)
 
           p.write_text(s, encoding='utf-8')
           PY
