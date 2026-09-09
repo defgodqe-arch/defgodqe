@@ -44,6 +44,12 @@ jobs:
               if marker in s:
                   s = s.replace(marker, branding + '\n\n  ' + marker, 1)
 
+          features = '<script src="features.js"></script>'
+          if features not in s:
+              marker = '<script\n    type="module"\n    src="app.js"\n  ></script>'
+              if marker in s:
+                  s = s.replace(marker, features + '\n\n  ' + marker, 1)
+
           p.write_text(s, encoding='utf-8')
           PY
 
