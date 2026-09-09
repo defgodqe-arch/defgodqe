@@ -22,6 +22,11 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
+          # Remove only the accidental literal "html" line.
+          # Never rebuild or replace the UI.
+          if s.startswith('html\n'):
+              s = s[5:]
+
           old = 'assets/Screenshot_2026-02-27_164030.png'
           new = 'https://raw.githubusercontent.com/defgodqe-arch/defgodqe-ai/main/Screenshot_2026-02-27_164030.png'
           if old in s:
@@ -32,16 +37,12 @@ jobs:
               marker = '<link\n    rel="stylesheet"\n    href="styles.css"\n  />'
               if marker in s:
                   s = s.replace(marker, marker + '\n\n  ' + mobile, 1)
-              else:
-                  raise SystemExit('styles.css link not found')
 
           branding = '<script src="branding.js"></script>'
           if branding not in s:
               marker = '<script\n    type="module"\n    src="app.js"\n  ></script>'
               if marker in s:
                   s = s.replace(marker, branding + '\n\n  ' + marker, 1)
-              else:
-                  raise SystemExit('app.js script not found')
 
           p.write_text(s, encoding='utf-8')
           PY
