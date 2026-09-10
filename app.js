@@ -13,3 +13,4 @@ import './cool-stuff.js';
 import './feature-pack.js';
 import './doom-scroll.js';
 import './sidebar-extras.js';
+import './doom-mobile-fix.js';
