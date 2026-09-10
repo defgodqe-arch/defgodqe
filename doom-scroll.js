@@ -1,21 +1,11 @@
-/* defgodqe — Doom Scroll: native fullscreen vertical video feed */
+/* defgodqe — Doom Scroll: fullscreen vertical YouTube video feed */
 (function(){
 'use strict';
 if(window.__defgodqeDoomScroll)return;
 window.__defgodqeDoomScroll=true;
 
-/*
- * Add your own MP4/WebM video URLs here.
- * These are played by the browser's native <video> element — no YouTube player,
- * iframe, YouTube branding, or YouTube controls are used.
- */
-const VIDEO_URLS=[
-  '/videos/short-01.mp4',
-  '/videos/short-02.mp4',
-  '/videos/short-03.mp4',
-  '/videos/short-04.mp4',
-  '/videos/short-05.mp4'
-];
+/* YouTube remains the video source so its normal YouTube branding is preserved. */
+const VIDEO_IDS=['SiUXHEvd_rA','G1DG_OV5oww','o6XRvViYlug','N3cAVsH5pW4','V6bPomtNnis','YpecVts2qqc','wLaM_GLdZto','Pvl12OOpSXM','RBYgcczTUYs','i8-YZWlSJFk','meEy3Jg4INM','HvaXcZAVpB8','QfYwCuvhgGE','hKT2kCj6V-I','PURhWbQOjew','uqN5jWFYS00','ciIAcD4eXsI','dq8xGCBSBcQ','ZtVfmhhZrkg','TciQ1iOKBkA','cu61ElxVFlo','G4NzI382ZM','40j6qvMDVrE','NSmY5cVTBB4','8jCzEQPz9n0','Sca9-pD1lXo','LLoUQnD_UdM','9ldmPrQRGj4','SNI4d-mMgcA'];
 const VIDEO_COUNT=1000;
 const slots=Array.from({length:VIDEO_COUNT},(_,i)=>i);
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -28,7 +18,10 @@ const style=document.createElement('style');style.textContent=`
 #dfDoomFeed::-webkit-scrollbar{display:none}
 .df-doom-card{height:100dvh;min-height:100dvh;width:100%;scroll-snap-align:start;scroll-snap-stop:always;background:#000}
 .df-doom-player{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:99991!important;background:#000;pointer-events:none!important}
-#dfDoomVideo{display:block!important;width:100vw!important;height:100dvh!important;object-fit:contain!important;background:#000!important;pointer-events:none!important}
+#dfDoomPlayer{display:block!important;width:100vw!important;height:100dvh!important;border:0!important;background:#000!important;pointer-events:none!important;visibility:visible!important;opacity:1!important}
+/* Keep the YouTube video visible, but prevent the iframe from receiving clicks/hover,
+   which prevents the giant YouTube pause/play overlay from being triggered by the feed. */
+#dfDoomPlayer iframe{pointer-events:none!important}
 #dfDoomExit{position:fixed;top:18px;right:18px;z-index:100000;width:46px;height:46px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(15,15,20,.78);backdrop-filter:blur(12px);color:#fff;font-size:26px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.35);transition:transform .15s ease,background .15s ease}
 #dfDoomExit:hover{transform:scale(1.08);background:rgba(40,40,48,.9)}
 #dfDoomExit:active{transform:scale(.95)}
@@ -51,29 +44,79 @@ for(let i=0;i<VIDEO_COUNT;i++){
 
 const playerWrap=document.createElement('div');
 playerWrap.className='df-doom-player';
-playerWrap.innerHTML='<video id="dfDoomVideo" playsinline preload="auto" muted></video>';
+playerWrap.innerHTML='<div id="dfDoomPlayer"></div>';
 overlay.appendChild(playerWrap);
-const video=playerWrap.querySelector('#dfDoomVideo');
 
-let activeIndex=-1,isOpen=false,playToken=0;
-function videoUrlFor(position){return VIDEO_URLS[order[position]%VIDEO_URLS.length]}
+let ytPlayer=null,ytReady=false,activeIndex=-1,isOpen=false,playToken=0;
+function videoIdFor(position){return VIDEO_IDS[order[position]%VIDEO_IDS.length]}
+function ensureYouTube(){
+  if(window.YT&&window.YT.Player){createPlayer();return}
+  if(document.getElementById('dfDoomYTApi'))return;
+  const s=document.createElement('script');
+  s.id='dfDoomYTApi';
+  s.src='https://www.youtube.com/iframe_api';
+  document.head.appendChild(s);
+  const previous=window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady=function(){
+    if(typeof previous==='function')try{previous()}catch(_){}
+    createPlayer();
+  };
+}
+function createPlayer(){
+  if(ytPlayer||!window.YT||!window.YT.Player)return;
+  ytPlayer=new YT.Player('dfDoomPlayer',{
+    width:'100%',
+    height:'100%',
+    videoId:videoIdFor(Math.max(0,activeIndex)),
+    playerVars:{
+      autoplay:0,
+      controls:0,
+      playsinline:1,
+      rel:0,
+      enablejsapi:1,
+      disablekb:1,
+      fs:0,
+      iv_load_policy:3,
+      cc_load_policy:0,
+      modestbranding:1,
+      origin:location.origin
+    },
+    events:{
+      onReady:function(){
+        ytReady=true;
+        if(isOpen&&activeIndex>=0)loadActive(true);
+      },
+      onStateChange:function(event){
+        /* If YouTube briefly enters paused state while the next short is loading,
+           immediately resume it. This keeps the giant pause overlay from lingering. */
+        if(isOpen&&event.data===2){
+          setTimeout(()=>{
+            if(isOpen&&ytReady&&ytPlayer)try{ytPlayer.playVideo()}catch(_){}
+          },60);
+        }
+      },
+      onError:function(){}
+    }
+  });
+}
 function loadActive(auto){
-  if(!isOpen||activeIndex<0||!VIDEO_URLS.length)return;
-  const token=++playToken;
-  const src=videoUrlFor(activeIndex);
-  if(video.src!==new URL(src,location.href).href)video.src=src;
-  else video.currentTime=0;
-  video.load();
-  video.muted=false;
-  if(auto){
-    const play=()=>{if(isOpen&&token===playToken)video.play().catch(()=>{video.muted=true;video.play().catch(()=>{})})};
-    video.addEventListener('canplay',play,{once:true});
-    setTimeout(play,100);
-  }
+  if(!ytReady||!ytPlayer||activeIndex<0)return;
+  const id=videoIdFor(activeIndex),token=++playToken;
+  try{
+    ytPlayer.loadVideoById(id);
+    setTimeout(()=>{
+      if(isOpen&&token===playToken&&auto)try{
+        ytPlayer.playVideo();
+        ytPlayer.unMute();
+        ytPlayer.setVolume(100);
+      }catch(_){}
+    },200);
+  }catch(_){}
 }
 function playAt(position){
   if(!isOpen||position<0||position>=VIDEO_COUNT)return;
   activeIndex=position;
+  if(!ytPlayer){ensureYouTube();return}
   loadActive(true);
 }
 function goToVideo(direction){
@@ -91,14 +134,13 @@ function open(){
   overlay.classList.add('df-open');
   document.body.style.overflow='hidden';
   feed.scrollTop=0;
-  loadActive(true);
+  ensureYouTube();
+  if(ytReady)loadActive(true);
 }
 function close(){
   isOpen=false;
   playToken++;
-  video.pause();
-  video.removeAttribute('src');
-  video.load();
+  if(ytReady&&ytPlayer)try{ytPlayer.stopVideo()}catch(_){}
   overlay.classList.remove('df-open');
   document.body.style.overflow='';
 }
@@ -117,7 +159,7 @@ feed.addEventListener('scroll',()=>{
   });
 },{passive:true});
 
-/* Mouse wheel: one wheel action = one video. */
+/* Mouse-wheel video switching: one wheel movement = one short. */
 let wheelLocked=false;
 feed.addEventListener('wheel',e=>{
   if(!isOpen)return;
