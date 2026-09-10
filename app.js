@@ -1,6 +1,7 @@
 /* defgodqe — restored working core + futuristic visual layer */
 /* Register the Space-key guard BEFORE the remote core so global shortcuts cannot consume Space. */
 import './space-fix.js';
+import './audio-fix.js';
 import 'https://cdn.jsdelivr.net/gh/defgodqe-arch/defgodqe@013d26575d03aebd4c6dbc6bb62427f5650d2a93/app.js';
 import './branding.js';
 import './enhancements.js';
