@@ -33,3 +33,4 @@ import './app-boost.js';
 import './defgodqe-mega.js';
 import './realism-layer.js';
 import './web-search-fix.js';
+import './direct-messages.js';
