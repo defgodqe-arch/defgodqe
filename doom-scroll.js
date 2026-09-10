@@ -11,8 +11,8 @@ window.__defgodqeDoomScroll=true;
  */
 const VIDEO_SOURCES=[];
 const VIDEO_COUNT=1000;
-const CACHE_NAME='defgodqe-doom-temporary-v2';
-const CACHE_LIMIT=3;
+const CACHE_NAME='defgodqe-doom-temporary-v3';
+const CACHE_LIMIT=10;
 const slots=Array.from({length:VIDEO_COUNT},(_,i)=>i);
 const shuffle=a=>{for(let i=a.length-1;i>0;i--;){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 let order=shuffle(slots.slice());
@@ -70,10 +70,13 @@ async function cacheVideo(url){
 }
 async function preloadAround(position){
   if(!cacheEnabled)return;
+  const urls=[];
   for(let d=1;d<=CACHE_LIMIT;d++){
     const p=position+d;if(p>=VIDEO_COUNT)break;
-    const u=sourceFor(p);if(u&&!cacheWarm.has(u))await cacheVideo(u);
+    const u=sourceFor(p);
+    if(u&&!cacheWarm.has(u))urls.push(u);
   }
+  await Promise.all(urls.map(cacheVideo));
 }
 async function loadActive(auto){
   const url=sourceFor(activeIndex);
