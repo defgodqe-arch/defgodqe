@@ -4,7 +4,6 @@
   if (window.__defgodqeDoomScroll) return;
   window.__defgodqeDoomScroll = true;
 
-  // A mix of Minecraft, Zack D. Films, history, and other short-form videos.
   const videos = [
     { id: 'YWOuN6w4Yqs', title: 'Zack D. Films — Quick Story', creator: 'Zack D. Films', tag: 'ZACK' },
     { id: '-Bybm8MNcaA', title: 'Minecraft Shorts Compilation', creator: 'Minecraft', tag: 'MINECRAFT' },
@@ -42,7 +41,6 @@
     .df-doom-hint{position:absolute;top:50%;right:8px;transform:translateY(-50%);writing-mode:vertical-rl;color:rgba(255,255,255,.55);font-size:11px;letter-spacing:.12em;pointer-events:none}
     .df-doom-loading{position:absolute;z-index:2;display:grid;place-items:center;width:58px;height:58px;border:3px solid rgba(250,204,21,.18);border-top-color:#facc15;border-radius:50%;animation:dfDoomSpin .8s linear infinite;pointer-events:none}
     @keyframes dfDoomSpin{to{transform:rotate(360deg)}}
-    /* Match the Mini arcade sidebar button exactly: same wrapper, spacing, border, background, typography and shine. */
     #dfDoomBtn{position:relative;overflow:hidden}
     #dfDoomBtn::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(250,204,21,.22),transparent);transform:translateX(-100%);animation:dfDoomShine 2.5s infinite;pointer-events:none}
     @keyframes dfDoomShine{60%,100%{transform:translateX(100%)}}
@@ -65,11 +63,10 @@
     const card = document.createElement('section');
     card.className = 'df-doom-card';
     card.dataset.index = i;
-    const eager = i < 2;
     const src = `https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&mute=0&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&vq=hd720`;
     card.innerHTML = `
       <div class="df-doom-loading"></div>
-      <iframe class="df-doom-video" title="${v.title}" data-src="${src}" ${eager ? `src="${src}"` : ''} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen ${eager ? 'loading="eager"' : 'loading="lazy"'}></iframe>
+      <iframe class="df-doom-video" title="${v.title}" data-src="${src}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>
       <div class="df-doom-shade"></div>
       <div class="df-doom-info"><div class="df-doom-title">${v.title}</div><div class="df-doom-creator">${v.creator} • YouTube</div><span class="df-doom-tag">${v.tag}</span></div>
       <div class="df-doom-actions">
@@ -83,53 +80,83 @@
 
   const cards = [...feed.querySelectorAll('.df-doom-card')];
   const frames = cards.map(card => card.querySelector('iframe'));
-  const loadFrame = (frame) => {
-    if (!frame.src || frame.src === location.href || frame.src === 'about:blank') frame.src = frame.dataset.src;
-  };
+  let activeIndex = -1;
 
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      const index = Number(entry.target.dataset.index);
-      loadFrame(frames[index]);
-      if (frames[index + 1]) loadFrame(frames[index + 1]);
-      setTimeout(() => setMaxVolume(frames[index]), 500);
-    });
-  }, { threshold: 0.65 });
-  cards.forEach(card => observer.observe(card));
+  function loadFrame(frame) {
+    if (!frame) return;
+    if (!frame.getAttribute('src')) frame.setAttribute('src', frame.dataset.src);
+  }
 
-  function setMaxVolume(frame) {
-    if (!frame || !frame.contentWindow) return;
-    const msg = JSON.stringify({ event:'command', func:'unMute', args:[] });
-    const vol = JSON.stringify({ event:'command', func:'setVolume', args:[100] });
-    const play = JSON.stringify({ event:'command', func:'playVideo', args:[] });
+  function pauseFrame(frame) {
+    if (!frame || !frame.contentWindow || !frame.getAttribute('src')) return;
     try {
-      frame.contentWindow.postMessage(msg, 'https://www.youtube-nocookie.com');
-      frame.contentWindow.postMessage(vol, 'https://www.youtube-nocookie.com');
-      frame.contentWindow.postMessage(play, 'https://www.youtube-nocookie.com');
+      const target = 'https://www.youtube-nocookie.com';
+      frame.contentWindow.postMessage(JSON.stringify({ event:'command', func:'pauseVideo', args:[] }), target);
+      frame.contentWindow.postMessage(JSON.stringify({ event:'command', func:'stopVideo', args:[] }), target);
     } catch (_) {}
   }
 
-  function boostCurrentAudio() {
-    const current = cards.find(c => {
-      const r = c.getBoundingClientRect();
-      return r.top < innerHeight * 0.45 && r.bottom > innerHeight * 0.55;
+  function unloadFrame(frame) {
+    if (!frame) return;
+    pauseFrame(frame);
+    frame.removeAttribute('src');
+  }
+
+  function setMaxVolume(frame) {
+    if (!frame || !frame.contentWindow || !frame.getAttribute('src')) return;
+    try {
+      const target = 'https://www.youtube-nocookie.com';
+      frame.contentWindow.postMessage(JSON.stringify({ event:'command', func:'unMute', args:[] }), target);
+      frame.contentWindow.postMessage(JSON.stringify({ event:'command', func:'setVolume', args:[100] }), target);
+      frame.contentWindow.postMessage(JSON.stringify({ event:'command', func:'playVideo', args:[] }), target);
+    } catch (_) {}
+  }
+
+  function activate(index) {
+    if (!overlay.classList.contains('df-open')) return;
+    if (index < 0 || index >= frames.length) return;
+
+    // Stop and unload every other player. Only the visible video is allowed to exist/play.
+    frames.forEach((frame, i) => {
+      if (i !== index) unloadFrame(frame);
     });
-    if (current) setMaxVolume(current.querySelector('iframe'));
+
+    activeIndex = index;
+    const frame = frames[index];
+    loadFrame(frame);
+    setTimeout(() => setMaxVolume(frame), 250);
+    setTimeout(() => setMaxVolume(frame), 900);
+  }
+
+  const observer = new IntersectionObserver(entries => {
+    if (!overlay.classList.contains('df-open')) return;
+    let best = null;
+    entries.forEach(entry => {
+      if (entry.isIntersecting && (!best || entry.intersectionRatio > best.intersectionRatio)) best = entry;
+    });
+    if (best) activate(Number(best.target.dataset.index));
+  }, { threshold: [0.65, 0.8, 0.95] });
+  cards.forEach(card => observer.observe(card));
+
+  function boostCurrentAudio() {
+    if (activeIndex >= 0) setMaxVolume(frames[activeIndex]);
   }
 
   function open() {
     overlay.classList.add('df-open');
     document.body.style.overflow = 'hidden';
     feed.scrollTop = 0;
-    loadFrame(frames[0]);
-    loadFrame(frames[1]);
-    setTimeout(boostCurrentAudio, 250);
+    activate(0);
   }
+
   function close() {
+    // Completely stop/unload YouTube players before hiding Doom Scroll.
+    frames.forEach(unloadFrame);
+    activeIndex = -1;
     overlay.classList.remove('df-open');
     document.body.style.overflow = '';
   }
+
   window.defgodqeDoomScrollOpen = open;
   window.defgodqeDoomScrollClose = close;
 
@@ -140,7 +167,19 @@
     const next = e.target.closest('[data-next]');
     if (next) next.closest('.df-doom-card').nextElementSibling?.scrollIntoView({behavior:'smooth'});
   });
-  feed.addEventListener('scroll', () => { window.requestAnimationFrame(boostCurrentAudio); }, { passive:true });
+
+  feed.addEventListener('scroll', () => {
+    window.requestAnimationFrame(() => {
+      if (!overlay.classList.contains('df-open')) return;
+      const index = Math.round(feed.scrollTop / innerHeight);
+      if (index !== activeIndex) activate(index);
+    });
+  }, { passive:true });
+
+  overlay.addEventListener('pointerdown', () => {
+    if (overlay.classList.contains('df-open')) boostCurrentAudio();
+  }, { passive:true });
+
   document.addEventListener('keydown', e => {
     if (!overlay.classList.contains('df-open')) return;
     if (e.key === 'Escape') close();
@@ -156,7 +195,6 @@
     const user = sidebar.querySelector('#authRow')?.parentElement;
     if (!user) return false;
 
-    // Use the exact same wrapper and button classes as Mini arcade, then sit directly beside it.
     const wrap = document.createElement('div');
     wrap.className = 'px-3 pb-2';
     wrap.innerHTML = '<button id="dfDoomBtn" type="button" class="flex w-full items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-brand/10"><span style="font-size:17px">📱</span><span>Doom scroll</span><span style="margin-left:auto;font-size:10px;color:#facc15">SHORTS</span></button>';
@@ -166,6 +204,7 @@
     document.getElementById('dfDoomBtn').onclick = open;
     return true;
   }
+
   if (!addSidebarButton()) {
     const mo = new MutationObserver(() => { if (addSidebarButton()) mo.disconnect(); });
     mo.observe(document.body, {childList:true,subtree:true});
