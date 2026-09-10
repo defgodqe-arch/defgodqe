@@ -20,3 +20,4 @@ import './doom-mobile-fix.js';
 import './doom-replay.js';
 import './doom-owned.js';
 import './doom-recommendations.js';
+import './doom-ultra.js';
