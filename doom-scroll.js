@@ -1,4 +1,4 @@
-/* defgodqe — Doom Scroll: clean fullscreen video-only feed */
+/* defgodqe — Doom Scroll: fullscreen scrolling videos, no center pause overlay */
 (function(){
 'use strict';
 if(window.__defgodqeDoomScroll)return;
@@ -38,12 +38,12 @@ function ensureYouTube(){
 }
 function createPlayer(){
  if(ytPlayer||!window.YT||!window.YT.Player)return;
- ytPlayer=new YT.Player('dfDoomPlayer',{width:'100%',height:'100%',videoId:videoIdFor(Math.max(0,activeIndex)),playerVars:{autoplay:0,controls:1,playsinline:1,rel:0,enablejsapi:1,origin:location.origin},events:{onReady:function(){ytReady=true;if(isOpen&&activeIndex>=0)loadActive(true)},onError:function(){}}});
+ ytPlayer=new YT.Player('dfDoomPlayer',{width:'100%',height:'100%',videoId:videoIdFor(Math.max(0,activeIndex)),playerVars:{autoplay:0,controls:0,playsinline:1,rel:0,enablejsapi:1,origin:location.origin},events:{onReady:function(){ytReady=true;if(isOpen&&activeIndex>=0)loadActive(true)},onError:function(){}}});
 }
 function loadActive(auto){
  if(!ytReady||!ytPlayer||activeIndex<0)return;
  const id=videoIdFor(activeIndex),token=++playToken;
- try{if(auto)ytPlayer.loadVideoById(id);else ytPlayer.cueVideoById(id);setTimeout(()=>{if(isOpen&&token===playToken&&auto)try{ytPlayer.playVideo()}catch(_){}},250)}catch(_){}
+ try{ytPlayer.loadVideoById(id);setTimeout(()=>{if(isOpen&&token===playToken&&auto)try{ytPlayer.playVideo()}catch(_){}},120)}catch(_){}
 }
 function playAt(position){
  if(!isOpen||position<0||position>=VIDEO_COUNT)return;
@@ -53,13 +53,10 @@ function playAt(position){
 }
 function open(){isOpen=true;order=shuffle(slots.slice());activeIndex=0;playToken++;overlay.classList.add('df-open');document.body.style.overflow='hidden';feed.scrollTop=0;ensureYouTube();if(ytReady)loadActive(true)}
 function close(){isOpen=false;playToken++;if(ytReady&&ytPlayer)try{ytPlayer.stopVideo()}catch(_){}overlay.classList.remove('df-open');document.body.style.overflow=''}
-function userPlay(){if(ytReady&&ytPlayer)try{ytPlayer.playVideo();ytPlayer.unMute();ytPlayer.setVolume(100)}catch(_){}
-}
 window.defgodqeDoomScrollOpen=open;window.defgodqeDoomScrollClose=close;
 let scrollRaf=0;
 feed.addEventListener('scroll',()=>{if(scrollRaf)return;scrollRaf=requestAnimationFrame(()=>{scrollRaf=0;if(!isOpen)return;const i=Math.max(0,Math.min(VIDEO_COUNT-1,Math.round(feed.scrollTop/Math.max(1,innerHeight))));if(i!==activeIndex)playAt(i)})},{passive:true});
-playerWrap.addEventListener('pointerdown',userPlay,{passive:true});
-document.addEventListener('keydown',e=>{if(!isOpen)return;if(e.key==='Escape')close();if(e.key==='ArrowDown'){e.preventDefault();feed.scrollBy({top:innerHeight,behavior:'smooth'})}if(e.key==='ArrowUp'){e.preventDefault();feed.scrollBy({top:-innerHeight,behavior:'smooth'})}if(e.code==='Space'){e.preventDefault();userPlay()}});
+document.addEventListener('keydown',e=>{if(!isOpen)return;if(e.key==='Escape')close();if(e.key==='ArrowDown'){e.preventDefault();feed.scrollBy({top:innerHeight,behavior:'smooth'})}if(e.key==='ArrowUp'){e.preventDefault();feed.scrollBy({top:-innerHeight,behavior:'smooth'})}});
 function addSidebarButton(){
  if(document.getElementById('dfDoomBtn'))return true;const sidebar=document.getElementById('sidebar');if(!sidebar)return false;const user=sidebar.querySelector('#authRow')?.parentElement;if(!user)return false;
  const wrap=document.createElement('div');wrap.className='px-3 pb-2';wrap.innerHTML='<button id="dfDoomBtn" type="button" class="flex w-full items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-brand/10"><span style="font-size:17px">📱</span><span>Doom scroll</span><span style="margin-left:auto;font-size:10px;color:#facc15">1000 SHORTS</span></button>';
