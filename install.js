@@ -3,26 +3,51 @@
   let deferredPrompt = null;
   let installButton = null;
 
+  const HIDDEN_KEY = 'defgodqe_install_button_hidden';
+
   function isStandalone() {
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   }
 
-  function createButton() {
-    if (installButton || isStandalone()) return;
+  function isHiddenByUser() {
+    try { return localStorage.getItem(HIDDEN_KEY) === '1'; } catch (_) { return false; }
+  }
 
-    installButton = document.createElement('button');
+  function hideButtonForever() {
+    try { localStorage.setItem(HIDDEN_KEY, '1'); } catch (_) {}
+    if (installButton) installButton.remove();
+    installButton = null;
+  }
+
+  function createButton() {
+    if (installButton || isStandalone() || isHiddenByUser()) return;
+
+    installButton = document.createElement('div');
     installButton.id = 'defgodqeInstallBtn';
-    installButton.type = 'button';
-    installButton.setAttribute('aria-label', 'Install defgodqe as an app');
-    installButton.innerHTML = '<span aria-hidden="true">⬇</span><span>Install app</span>';
     installButton.style.cssText = [
       'position:fixed', 'right:14px', 'bottom:calc(82px + env(safe-area-inset-bottom, 0px))',
-      'z-index:9998', 'display:flex', 'align-items:center', 'gap:8px', 'padding:11px 15px',
+      'z-index:9998', 'display:flex', 'align-items:center', 'gap:6px', 'padding:6px',
       'border:1px solid rgba(250,204,21,.45)', 'border-radius:999px', 'background:#facc15',
-      'color:#111827', 'font:700 13px Inter,system-ui,sans-serif', 'box-shadow:0 8px 30px rgba(0,0,0,.35)',
-      'cursor:pointer', 'touch-action:manipulation'
+      'color:#111827', 'font:700 13px Inter,system-ui,sans-serif', 'box-shadow:0 8px 30px rgba(0,0,0,.35)'
     ].join(';');
-    installButton.addEventListener('click', install);
+
+    const install = document.createElement('button');
+    install.type = 'button';
+    install.setAttribute('aria-label', 'Install defgodqe as an app');
+    install.textContent = '⬇ Install app';
+    install.style.cssText = 'border:0;background:transparent;color:#111827;font:inherit;padding:7px 9px;cursor:pointer;touch-action:manipulation;';
+    install.addEventListener('click', installApp);
+
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Hide install app button');
+    close.title = 'Hide install app button';
+    close.textContent = '×';
+    close.style.cssText = 'width:28px;height:28px;border:0;border-radius:50%;background:rgba(17,24,39,.12);color:#111827;font:700 20px/24px system-ui;cursor:pointer;touch-action:manipulation;';
+    close.addEventListener('click', hideButtonForever);
+
+    installButton.appendChild(install);
+    installButton.appendChild(close);
     document.body.appendChild(installButton);
   }
 
@@ -31,7 +56,7 @@
     installButton = null;
   }
 
-  async function install() {
+  async function installApp() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       try { await deferredPrompt.userChoice; } catch (_) {}
@@ -40,7 +65,6 @@
       return;
     }
 
-    // iPhone/iPad Safari does not expose beforeinstallprompt.
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
     if (isIOS) {
       showIOSHelp();
@@ -70,7 +94,7 @@
   window.addEventListener('appinstalled', hideButton);
 
   function init() {
-    if (isStandalone()) return;
+    if (isStandalone() || isHiddenByUser()) return;
     createButton();
   }
 
