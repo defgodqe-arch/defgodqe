@@ -23,7 +23,7 @@
         <div class="df-launch-orb"></div>
         <div class="df-launch-orb-glint"></div>
       </div>
-      <div class="df-launch-title">DEFGODQE</div>
+      <div class="df-launch-title">defgodqe</div>
       <div class="df-launch-status"><span></span> INITIALIZING AI...</div>
     </div>`;
   document.documentElement.appendChild(launch);
@@ -38,18 +38,15 @@
     .df-launch-ring-b { width:320px; height:320px; border-style:dashed; animation:dfSpinReverse 6s linear infinite; }
     .df-launch-scan { position:absolute; width:70vw; height:1px; background:linear-gradient(90deg,transparent,rgba(250,204,21,.5),transparent); box-shadow:0 0 18px rgba(250,204,21,.35); animation:dfScan 2.2s ease-in-out infinite; }
     .df-launch-core { position:relative; z-index:2; text-align:center; transform:translateY(10px); animation:dfCoreIn 1s cubic-bezier(.16,1,.3,1) forwards; }
-
     .df-launch-orb-wrap { position:relative; width:118px; height:118px; margin:auto; display:grid; place-items:center; }
     .df-launch-orb-aura { position:absolute; inset:-30px; border-radius:50%; background:radial-gradient(circle,rgba(250,204,21,.28) 0%,rgba(250,204,21,.12) 35%,transparent 70%); filter:blur(8px); animation:dfOrbAura 1.8s ease-in-out infinite; }
     .df-launch-orb { position:relative; width:84px; height:84px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#fff8bd 0%,#fef08a 12%,#facc15 42%,#eab308 68%,#a16207 100%); border:1px solid rgba(255,244,150,.9); box-shadow:0 0 18px rgba(250,204,21,.85),0 0 45px rgba(250,204,21,.55),0 0 90px rgba(250,204,21,.3),inset -10px -12px 22px rgba(120,75,0,.25),inset 8px 8px 18px rgba(255,255,220,.38); animation:dfOrbFloat 2s ease-in-out infinite,dfOrbGlow 1.5s ease-in-out infinite; }
     .df-launch-orb::before { content:""; position:absolute; inset:7px; border-radius:50%; border:1px solid rgba(255,255,210,.3); animation:dfOrbRing 2s linear infinite; }
     .df-launch-orb::after { content:""; position:absolute; top:14px; left:20px; width:20px; height:10px; border-radius:50%; background:rgba(255,255,235,.72); filter:blur(5px); transform:rotate(-25deg); }
     .df-launch-orb-glint { position:absolute; width:140px; height:140px; border-radius:50%; border:1px solid rgba(250,204,21,.22); animation:dfExpand 1.8s ease-out infinite; pointer-events:none; }
-
     .df-launch-title { margin-top:28px; font:800 24px/1 system-ui,sans-serif; letter-spacing:.45em; color:#fff; text-shadow:0 0 22px rgba(250,204,21,.45); }
     .df-launch-status { margin-top:12px; color:#94a3b8; font:500 11px/1 system-ui,sans-serif; letter-spacing:.18em; }
     .df-launch-status span { display:inline-block; width:6px; height:6px; margin-right:8px; border-radius:50%; background:#facc15; box-shadow:0 0 12px #facc15; animation:dfBlink 1s infinite; }
-
     .sidebar { width:292px !important; background:radial-gradient(circle at 15% 0%,rgba(250,204,21,.09),transparent 30%),linear-gradient(180deg,#0b1019 0%,#080c13 100%) !important; border-right:1px solid rgba(255,255,255,.07) !important; box-shadow:18px 0 55px rgba(0,0,0,.18); position:relative; overflow:hidden; }
     .sidebar::before { content:""; position:absolute; left:0; top:0; width:2px; height:100%; background:linear-gradient(180deg,#facc15,rgba(250,204,21,.08) 42%,transparent 85%); opacity:.8; pointer-events:none; }
     .sidebar > div:first-child { position:relative; margin:10px 10px 8px; padding:11px !important; min-height:62px; border:1px solid rgba(255,255,255,.07); border-radius:16px; background:rgba(255,255,255,.035); box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
@@ -77,11 +74,8 @@
     #signBtn:hover { border-color:rgba(250,204,21,.35); background:rgba(250,204,21,.1) !important; color:#facc15 !important; }
     @media (max-width:1023px) { .sidebar { width:292px !important; box-shadow:18px 0 60px rgba(0,0,0,.45); } }
     @media (max-width:480px) { .sidebar { width:min(292px,88vw) !important; } }
-
-    /* Keep the center orb clean: no logo/image overlay. */
     .orb .df-brand-orb { display:none !important; }
     .orb { position:relative; }
-
     @keyframes dfCoreIn { from { opacity:0; transform:translateY(30px) scale(.92); filter:blur(10px); } to { opacity:1; transform:none; filter:none; } }
     @keyframes dfOrbFloat { 50% { transform:translateY(-5px) scale(1.035); } }
     @keyframes dfOrbGlow { 0%,100% { filter:brightness(1); } 50% { filter:brightness(1.18); } }
@@ -106,7 +100,6 @@
         img.addEventListener('error', () => logoFallback(img), { once:true });
       }
     });
-
     document.querySelectorAll('.orb .df-brand-orb').forEach(img => img.remove());
     document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]').forEach(link => { link.href = SITE_ICON; });
   }
