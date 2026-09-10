@@ -1,4 +1,4 @@
-/* defgodqe — Doom Scroll: centered fullscreen vertical YouTube video feed */
+/* defgodqe — Doom Scroll: video-only fullscreen YouTube feed */
 (function(){
 'use strict';
 if(window.__defgodqeDoomScroll)return;
@@ -16,17 +16,12 @@ const style=document.createElement('style');style.textContent=`
 #dfDoomFeed{position:absolute;inset:0;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y;contain:strict;-webkit-overflow-scrolling:touch}
 #dfDoomFeed::-webkit-scrollbar{display:none}
 .df-doom-card{height:100dvh;min-height:100dvh;width:100%;scroll-snap-align:start;background:#000;contain:strict}
-.df-doom-player{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:99991!important;background:#000;pointer-events:none!important;contain:strict;overflow:hidden}
-#dfDoomPlayer{position:relative!important;display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;border:0!important;background:#000!important;pointer-events:none!important;visibility:visible!important;opacity:1!important;contain:strict;overflow:hidden}
-#dfDoomPlayer iframe{position:absolute!important;top:50%!important;left:50%!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;transform:translate(-50%,-50%)!important;border:0!important;pointer-events:none!important}
+.df-doom-player{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:99991!important;background:#000!important;padding:0!important;pointer-events:none!important;contain:strict;overflow:hidden}
+#dfDoomPlayer{position:relative!important;display:block!important;width:min(100vw,56.25dvh)!important;height:min(100dvh,177.7778vw)!important;max-width:100vw!important;max-height:100dvh!important;aspect-ratio:9/16!important;border:0!important;background:#000!important;pointer-events:none!important;visibility:visible!important;opacity:1!important;contain:strict;overflow:hidden}
+#dfDoomPlayer iframe{position:absolute!important;top:0!important;left:0!important;width:100%!important;height:100%!important;border:0!important;pointer-events:none!important}
 #dfDoomExit{position:fixed;top:18px;right:18px;z-index:100000;width:46px;height:46px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(15,15,20,.78);backdrop-filter:blur(12px);color:#fff;font-size:26px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.35);transition:transform .15s ease,background .15s ease}
 #dfDoomExit:hover{transform:scale(1.08);background:rgba(40,40,48,.9)}
 #dfDoomExit:active{transform:scale(.95)}
-@media (min-width:700px){
-  .df-doom-player{padding:0 24px!important}
-  #dfDoomPlayer{width:min(100%,100vw)!important;height:100%!important}
-  #dfDoomPlayer iframe{width:min(100%,100vw)!important}
-}
 `;
 document.head.appendChild(style);
 
