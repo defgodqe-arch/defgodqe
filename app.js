@@ -4,3 +4,4 @@ import './branding.js';
 import './enhancements.js';
 import './mobile-fix.js';
 import './install.js';
+import './mobile-app-fix.js';
