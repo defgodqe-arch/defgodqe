@@ -1,0 +1,50 @@
+/* defgodqe — realtime multiplayer mini-game: NEON TAG */
+(() => {
+  'use strict';
+  if (window.__defgodqeMultiplayerGame) return;
+  window.__defgodqeMultiplayerGame = true;
+
+  const DEFAULT_SERVER = 'wss://defgodqe-ai.defgodqe.workers.dev/game';
+  const css = `
+  #dfMP{position:fixed;inset:0;z-index:100100;background:rgba(2,4,9,.9);backdrop-filter:blur(18px);display:none;align-items:center;justify-content:center;padding:14px;color:#fff;font-family:Inter,system-ui,sans-serif}
+  #dfMP.open{display:flex}#dfMPPanel{position:relative;width:min(1050px,98vw);height:min(760px,94vh);overflow:hidden;border:1px solid rgba(250,204,21,.28);border-radius:26px;background:#05080e;box-shadow:0 30px 100px #000b,0 0 80px #facc1515}
+  #dfMPCanvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}#dfMPTop{position:absolute;left:18px;right:58px;top:14px;z-index:5;display:flex;gap:12px;align-items:center;pointer-events:none}.dfMPTitle{font-weight:900;letter-spacing:.08em}.dfMPTitle span{color:#facc15}.dfMPStats{margin-left:auto;color:#94a3b8;font-size:12px}.dfMPStats b{color:#fde047;font-size:17px}
+  #dfMPClose{position:absolute;right:12px;top:12px;z-index:20;width:40px;height:40px;border-radius:12px;border:1px solid #fff2;background:#080c14e8;color:#fff;font-size:23px;cursor:pointer}
+  #dfMPLobby{position:absolute;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 25%,#facc1514,#04070cf5 62%);padding:24px;box-sizing:border-box}.dfMPCard{width:min(520px,100%);padding:28px;border:1px solid #fff2;border-radius:24px;background:#0a0e16e8;box-shadow:0 20px 70px #0008}.dfMPCard h1{margin:0;font-size:40px}.dfMPCard h1 span{color:#facc15}.dfMPCard p{color:#94a3b8}.dfMPInput{width:100%;box-sizing:border-box;padding:13px 14px;margin:6px 0;border-radius:12px;border:1px solid #fff2;background:#05080e;color:#fff;outline:0}.dfMPBtns{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}.dfMPBtn{border:1px solid #fff2;background:#ffffff0b;color:#fff;border-radius:12px;padding:11px 15px;font-weight:800;cursor:pointer}.dfMPBtn.primary{background:#facc15;color:#111827;border-color:#facc15}.dfMPStatus{min-height:20px;color:#94a3b8;font-size:13px;margin-top:10px}.dfMPRoom{font-size:34px;letter-spacing:.18em;font-weight:900;color:#fde047;text-align:center;margin:15px 0}.dfMPHint{font-size:12px;color:#64748b;text-align:center}
+  #dfMPHud{position:absolute;left:18px;right:18px;bottom:15px;z-index:5;display:none;align-items:center;justify-content:space-between;gap:10px;pointer-events:none}.dfMPHud button{pointer-events:auto}.dfMPTouch{display:none;gap:8px}.dfMPTouch button{width:58px;height:52px;border-radius:15px;border:1px solid #facc1540;background:#080c14c9;color:#fde047;font-size:23px;touch-action:none}
+  @media(max-width:650px){#dfMP{padding:0}#dfMPPanel{width:100vw;height:100dvh;border-radius:0}.dfMPCard{padding:20px}.dfMPCard h1{font-size:31px}.dfMPTouch{display:flex}}
+  `;
+  const style=document.createElement('style');style.textContent=css;document.head.appendChild(style);
+  const root=document.createElement('div');root.id='dfMP';root.innerHTML=`<div id="dfMPPanel"><canvas id="dfMPCanvas"></canvas><div id="dfMPTop"><div class="dfMPTitle">NEON <span>TAG</span></div><div class="dfMPStats">PLAYERS <b id="dfMPPlayers">0</b></div></div><button id="dfMPClose">×</button><div id="dfMPLobby"><div class="dfMPCard"><h1>NEON <span>TAG</span></h1><p>Realtime multiplayer inside defgodqe. Create a room, share the 6-character code, then chase the glowing crown. Up to 8 players.</p><input id="dfMPName" class="dfMPInput" maxlength="20" placeholder="Your player name"><input id="dfMPCode" class="dfMPInput" maxlength="6" placeholder="Room code (leave empty to create)"><div class="dfMPBtns"><button class="dfMPBtn primary" id="dfMPCreate">Create room</button><button class="dfMPBtn" id="dfMPJoin">Join room</button></div><div id="dfMPStatus" class="dfMPStatus"></div><div id="dfMPRoom" class="dfMPRoom"></div><div class="dfMPHint">Desktop: WASD / arrows · Mobile: touch buttons · Space: leave room</div></div></div><div id="dfMPHud"><span id="dfMPInfo"></span><div class="dfMPTouch"><button id="dfMPUp">▲</button><button id="dfMPDown">▼</button><button id="dfMPLeft">◀</button><button id="dfMPRight">▶</button></div></div></div>`;document.body.appendChild(root);
+
+  const canvas=root.querySelector('#dfMPCanvas'),ctx=canvas.getContext('2d'),lobby=root.querySelector('#dfMPLobby'),status=root.querySelector('#dfMPStatus'),roomEl=root.querySelector('#dfMPRoom');
+  let ws=null,room='',me='',players={},selfId='',raf=0,last=0,keys={},touch={x:0,y:0};
+  const server=()=>String(window.DEFGODQE_GAME_SERVER||DEFAULT_SERVER).replace(/\/$/,'');
+  const resize=()=>{const r=canvas.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);canvas.width=Math.max(1,r.width*d);canvas.height=Math.max(1,r.height*d);ctx.setTransform(d,0,0,d,0,0)};
+  const W=()=>canvas.getBoundingClientRect().width,H=()=>canvas.getBoundingClientRect().height;
+  const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function setStatus(s){status.textContent=s}
+  function open(){root.classList.add('open');lobby.style.display='flex';resize();setStatus('');roomEl.textContent=''}
+  function leave(){if(ws){try{ws.close()}catch{}}ws=null;players={};room='';selfId='';cancelAnimationFrame(raf);lobby.style.display='flex';root.querySelector('#dfMPHud').style.display='none';roomEl.textContent=''}
+  function close(){leave();root.classList.remove('open')}
+  function connect(code,create){
+    const name=(root.querySelector('#dfMPName').value.trim()||'player').slice(0,20);
+    room=(code||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);
+    setStatus('Connecting to multiplayer server…');
+    const url=server()+'?room='+encodeURIComponent(room)+(create?'&create=1':'')+'&name='+encodeURIComponent(name);
+    try{ws=new WebSocket(url)}catch(e){setStatus('Could not open multiplayer connection.');return}
+    ws.onopen=()=>{me=name;setStatus(create?'Room created — share the code below.':'Joined room — waiting for players…');}
+    ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.type==='welcome'){selfId=m.id;room=m.room;roomEl.textContent=room;players=m.players||{};lobby.style.display='none';root.querySelector('#dfMPHud').style.display='flex';resize();last=performance.now();raf=requestAnimationFrame(loop);return}if(m.type==='state'){players=m.players||{};root.querySelector('#dfMPPlayers').textContent=Object.keys(players).length;const p=players[selfId];root.querySelector('#dfMPInfo').textContent=p&&p.tagged?'👑 YOU ARE IT — tag someone!':'Run from the crown!';}if(m.type==='error'){setStatus(m.message||'Room error');if(m.close)leave()}if(m.type==='room'){room=m.room;roomEl.textContent=room}}
+    ws.onerror=()=>setStatus('Multiplayer server unavailable. Check the game Worker deployment.')
+    ws.onclose=()=>{if(root.classList.contains('open')){setStatus('Disconnected from room.');root.querySelector('#dfMPHud').style.display='none';lobby.style.display='flex'}}
+  }
+  function send(){if(!ws||ws.readyState!==1)return;let x=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0)+touch.x,y=(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0)+touch.y;if(x||y){const n=Math.hypot(x,y)||1;ws.send(JSON.stringify({type:'move',x:x/n,y:y/n}))}}
+  function draw(){const w=W(),h=H();ctx.fillStyle='#04070c';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#facc150b';for(let x=0;x<w;x+=36){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let y=0;y<h;y+=36){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}for(const p of Object.values(players)){const x=p.x*w,y=p.y*h;ctx.save();ctx.shadowBlur=p.tagged?32:18;ctx.shadowColor=p.tagged?'#facc15':'#60a5fa';ctx.beginPath();ctx.arc(x,y,p.tagged?18:14,0,Math.PI*2);ctx.fillStyle=p.tagged?'#fde047':'#60a5fa';ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.font='700 12px Inter,system-ui';ctx.textAlign='center';ctx.fillText(p.name||'player',x,y-23);if(p.id===selfId){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,21,0,Math.PI*2);ctx.stroke()}ctx.restore()}}
+  function loop(t){if(!root.classList.contains('open')||!ws)return;const dt=Math.min(.05,(t-last)/1000);last=t;send();draw();raf=requestAnimationFrame(loop)}
+  function bindTouch(id,x,y){const b=root.querySelector(id);const on=v=>e=>{e.preventDefault();touch[x]=v;touch[y]=v};b.addEventListener('pointerdown',on(1));b.addEventListener('pointerup',on(0));b.addEventListener('pointercancel',on(0));b.addEventListener('pointerleave',on(0))}
+  bindTouch('#dfMPUp','y','x');root.querySelector('#dfMPUp').addEventListener('pointerdown',()=>touch.y=-1);bindTouch('#dfMPDown','y','x');root.querySelector('#dfMPDown').addEventListener('pointerdown',()=>touch.y=1);bindTouch('#dfMPLeft','x','y');root.querySelector('#dfMPLeft').addEventListener('pointerdown',()=>touch.x=-1);bindTouch('#dfMPRight','x','y');root.querySelector('#dfMPRight').addEventListener('pointerdown',()=>touch.x=1);
+  root.querySelector('#dfMPCreate').onclick=()=>connect('',true);root.querySelector('#dfMPJoin').onclick=()=>{const c=root.querySelector('#dfMPCode').value.trim();if(c.length<4)return setStatus('Enter a room code.');connect(c,false)};root.querySelector('#dfMPClose').onclick=close;
+  window.addEventListener('keydown',e=>{keys[e.key]=true;if(e.key===' '&&root.classList.contains('open'))leave()});window.addEventListener('keyup',e=>{keys[e.key]=false});window.addEventListener('resize',resize);
+  window.defgodqeMultiplayer={open,close,leave};
+  const launcher=document.createElement('button');launcher.id='dfMultiplayerLaunch';launcher.type='button';launcher.textContent='🎮 Multiplayer';launcher.style.cssText='position:fixed;right:18px;bottom:18px;z-index:99990;border:1px solid rgba(250,204,21,.35);background:rgba(10,14,22,.92);color:#fde047;border-radius:14px;padding:11px 14px;font:800 13px Inter,system-ui,sans-serif;box-shadow:0 12px 35px #0008;cursor:pointer';launcher.onclick=open;document.body.appendChild(launcher);
+})();
