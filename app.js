@@ -3,3 +3,4 @@ import 'https://cdn.jsdelivr.net/gh/defgodqe-arch/defgodqe@013d26575d03aebd4c6db
 import './branding.js';
 import './enhancements.js';
 import './mobile-fix.js';
+import './install.js';
