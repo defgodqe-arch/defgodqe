@@ -29,11 +29,25 @@ function createPlayer(){if(ytPlayer||!window.YT||!window.YT.Player)return;ytPlay
 function loadActive(auto){if(!ytReady||!ytPlayer||activeIndex<0)return;const id=videoIdFor(activeIndex),token=++playToken;try{ytPlayer.loadVideoById(id);setTimeout(()=>{if(isOpen&&token===playToken&&auto)try{ytPlayer.playVideo();ytPlayer.unMute();ytPlayer.setVolume(100)}catch(_){}},200)}catch(_){}
 }
 function playAt(position){if(!isOpen||position<0||position>=VIDEO_COUNT)return;activeIndex=position;if(!ytPlayer){ensureYouTube();return}loadActive(true)}
+function goToVideo(direction){if(!isOpen)return;const next=Math.max(0,Math.min(VIDEO_COUNT-1,activeIndex+direction));if(next===activeIndex)return;feed.scrollTo({top:next*Math.max(1,innerHeight),behavior:'smooth'});playAt(next)}
 function open(){isOpen=true;order=shuffle(slots.slice());activeIndex=0;playToken++;overlay.classList.add('df-open');document.body.style.overflow='hidden';feed.scrollTop=0;ensureYouTube();if(ytReady)loadActive(true)}
 function close(){isOpen=false;playToken++;if(ytReady&&ytPlayer)try{ytPlayer.stopVideo()}catch(_){}overlay.classList.remove('df-open');document.body.style.overflow=''}
 window.defgodqeDoomScrollOpen=open;window.defgodqeDoomScrollClose=close;
 let scrollRaf=0;feed.addEventListener('scroll',()=>{if(scrollRaf)return;scrollRaf=requestAnimationFrame(()=>{scrollRaf=0;if(!isOpen)return;const i=Math.max(0,Math.min(VIDEO_COUNT-1,Math.round(feed.scrollTop/Math.max(1,innerHeight))));if(i!==activeIndex)playAt(i)})},{passive:true});
-document.addEventListener('keydown',e=>{if(!isOpen)return;if(e.key==='Escape')close();if(e.key==='ArrowDown'){e.preventDefault();feed.scrollBy({top:innerHeight,behavior:'smooth'})}if(e.key==='ArrowUp'){e.preventDefault();feed.scrollBy({top:-innerHeight,behavior:'smooth'})}});
+
+/* Mouse-wheel video switching: one wheel movement = one short. */
+let wheelLocked=false;
+feed.addEventListener('wheel',e=>{
+ if(!isOpen)return;
+ e.preventDefault();
+ if(wheelLocked)return;
+ const direction=e.deltaY>0?1:-1;
+ wheelLocked=true;
+ goToVideo(direction);
+ window.setTimeout(()=>{wheelLocked=false},350);
+},{passive:false});
+
+document.addEventListener('keydown',e=>{if(!isOpen)return;if(e.key==='Escape')close();if(e.key==='ArrowDown'){e.preventDefault();goToVideo(1)}if(e.key==='ArrowUp'){e.preventDefault();goToVideo(-1)}});
 function addSidebarButton(){if(document.getElementById('dfDoomBtn'))return true;const sidebar=document.getElementById('sidebar');if(!sidebar)return false;const user=sidebar.querySelector('#authRow')?.parentElement;if(!user)return false;const wrap=document.createElement('div');wrap.className='px-3 pb-2';wrap.innerHTML='<button id="dfDoomBtn" type="button" class="flex w-full items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-brand/10"><span style="font-size:17px">📱</span><span>Doom scroll</span><span style="margin-left:auto;font-size:10px;color:#facc15">1000 SHORTS</span></button>';const mini=sidebar.querySelector('#dfGameBtn')?.closest('.px-3.pb-2');if(mini)mini.after(wrap);else user.before(wrap);document.getElementById('dfDoomBtn').onclick=open;return true}
 if(!addSidebarButton()){const mo=new MutationObserver(()=>{if(addSidebarButton())mo.disconnect()});mo.observe(document.body,{childList:true,subtree:true})}
 })();
