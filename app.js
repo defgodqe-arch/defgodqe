@@ -7,3 +7,4 @@ import './install.js';
 import './mobile-app-fix.js';
 import './pwa.js';
 import './futuristic.js';
+import './mini-game.js';
