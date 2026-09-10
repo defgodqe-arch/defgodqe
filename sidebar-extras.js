@@ -25,22 +25,21 @@ const css=`
 #dfSidebarExperiences .df-exp-copy strong{color:#e2e8f0;font-size:12px}
 #dfSidebarExperiences .df-exp-copy small{color:#64748b;font-size:10px;font-weight:500}
 #dfSidebarExperiences .df-exp-btn::after,#dfNeonTagWrap #dfNeonTagBtn::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(250,204,21,.16),transparent);transform:translateX(-110%);animation:dfSideShine 4s infinite}
-#dfNeonTagWrap{padding:0 12px 7px}
-#dfNeonTagWrap #dfNeonTagBtn{border-color:rgba(250,204,21,.38);background:linear-gradient(135deg,rgba(250,204,21,.13),rgba(250,204,21,.035));box-shadow:0 0 22px rgba(250,204,21,.10),inset 0 0 18px rgba(250,204,21,.035);color:#fef3c7}
-#dfNeonTagWrap #dfNeonTagBtn:hover{transform:translateY(-1px) scale(1.01);border-color:rgba(250,204,21,.72);box-shadow:0 0 30px rgba(250,204,21,.18),inset 0 0 20px rgba(250,204,21,.06)}
+#dfNeonTagWrap{display:block!important;position:relative!important;visibility:visible!important;opacity:1!important;padding:0 12px 7px!important;flex:none!important}
+#dfNeonTagWrap #dfNeonTagBtn{display:flex!important;visibility:visible!important;opacity:1!important;min-height:44px!important;box-sizing:border-box!important;border-color:rgba(250,204,21,.48);background:linear-gradient(135deg,rgba(250,204,21,.15),rgba(250,204,21,.035));box-shadow:0 0 22px rgba(250,204,21,.10),inset 0 0 18px rgba(250,204,21,.035);color:#fef3c7}
+#dfNeonTagWrap #dfNeonTagBtn:hover{transform:translateY(-1px) scale(1.01);border-color:rgba(250,204,21,.78);box-shadow:0 0 30px rgba(250,204,21,.18),inset 0 0 20px rgba(250,204,21,.06)}
 #dfNeonTagWrap .df-neon-icon{width:25px;text-align:center;font-size:18px;color:#fde047;text-shadow:0 0 12px #facc15}
 #dfNeonTagWrap .df-neon-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
 #dfNeonTagWrap .df-neon-copy strong{font-size:13px;color:#fff}
 #dfNeonTagWrap .df-neon-copy small{font-size:9px;letter-spacing:.09em;color:#facc15;font-weight:800}
 #dfNeonTagWrap .df-neon-hot{margin-left:auto;font-size:9px;font-weight:900;color:#fef08a;border:1px solid rgba(250,204,21,.28);padding:3px 6px;border-radius:999px;background:rgba(250,204,21,.08)}
 @keyframes dfSideShine{0%,55%{transform:translateX(-110%)}80%,100%{transform:translateX(110%)}}
-@media(max-width:600px){#dfSidebarExperiences{padding-left:9px;padding-right:9px}#dfNeonTagWrap{padding-left:9px;padding-right:9px}}
+@media(max-width:600px){#dfSidebarExperiences{padding-left:9px;padding-right:9px}#dfNeonTagWrap{padding-left:9px!important;padding-right:9px!important}}
 `;
-const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+const st=document.createElement('style');st.id='dfSidebarExtrasStyle';st.textContent=css;document.head.appendChild(st);
 
 function toast(msg){
-  const t=document.createElement('div');
-  t.textContent=msg;
+  const t=document.createElement('div');t.textContent=msg;
   t.style='position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:20000;background:#0b1220;color:#fde68a;border:1px solid rgba(250,204,21,.3);padding:10px 14px;border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.45);font:700 12px Inter,system-ui,sans-serif';
   document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
 }
@@ -50,12 +49,10 @@ function action(type){
  if(type==='multiplayer'){
    if(window.defgodqeMultiplayer?.open){window.defgodqeMultiplayer.open();return true}
    toast('Loading Neon Tag…');
-   const start=Date.now();
-   const timer=setInterval(()=>{
+   const start=Date.now();const timer=setInterval(()=>{
      if(window.defgodqeMultiplayer?.open){clearInterval(timer);window.defgodqeMultiplayer.open();return}
      if(Date.now()-start>8000){clearInterval(timer);toast('Neon Tag is still loading — refresh once')}
-   },100);
-   return false;
+   },100);return false;
  }
  if(type==='games')return click('dfGameBtn');
  if(type==='voice')return click('voiceBtn')||click('voiceModeBtn');
@@ -66,10 +63,12 @@ function action(type){
  if(type==='surprise'){const ideas=['Build a new mini-game','Generate a Minecraft challenge','Create a viral short idea','Design a new app feature'];return toast(ideas[Math.floor(Math.random()*ideas.length)])}
 }
 
+function getSidebar(){return document.getElementById('sidebar')}
+function getUser(){const s=getSidebar();return s?.querySelector('#authRow')?.parentElement||null}
+
 function installExplore(){
  if(document.getElementById('dfSidebarExperiences'))return true;
- const sidebar=document.getElementById('sidebar');if(!sidebar)return false;
- const user=sidebar.querySelector('#authRow')?.parentElement;if(!user)return false;
+ const user=getUser();if(!user)return false;
  const box=document.createElement('div');box.id='dfSidebarExperiences';
  box.innerHTML='<div class="df-exp-label">Explore</div><div class="df-exp-grid"></div>';
  const grid=box.querySelector('.df-exp-grid');
@@ -82,27 +81,34 @@ function installExplore(){
 }
 
 function installNeonTag(){
- if(document.getElementById('dfNeonTagWrap'))return true;
- const sidebar=document.getElementById('sidebar');if(!sidebar)return false;
- const gameBtn=document.getElementById('dfGameBtn');if(!gameBtn)return false;
- const gameWrap=gameBtn.closest('.px-3')||gameBtn.parentElement;
- if(!gameWrap||!gameWrap.parentElement)return false;
- const wrap=document.createElement('div');wrap.id='dfNeonTagWrap';
+ let wrap=document.getElementById('dfNeonTagWrap');
+ if(wrap){wrap.style.display='block';wrap.style.visibility='visible';wrap.style.opacity='1';return true}
+ const sidebar=getSidebar();if(!sidebar)return false;
+ const gameBtn=document.getElementById('dfGameBtn');
+ const user=getUser();
+ if(!gameBtn&&!user)return false;
+ wrap=document.createElement('div');wrap.id='dfNeonTagWrap';
  wrap.innerHTML='<button id="dfNeonTagBtn" type="button" aria-label="Open Neon Tag laser freeze arena"><span class="df-neon-icon">⚡</span><span class="df-neon-copy"><strong>Neon Tag</strong><small>LASER FREEZE ARENA</small></span><span class="df-neon-hot">LIVE</span></button>';
- gameWrap.parentElement.insertBefore(wrap,gameWrap);
- document.getElementById('dfNeonTagBtn').onclick=()=>action('multiplayer');
+ if(gameBtn){
+   const target=gameBtn.closest('.px-3')||gameBtn.parentElement;
+   target.parentElement.insertBefore(wrap,target);
+ }else{
+   user.before(wrap);
+ }
+ wrap.querySelector('#dfNeonTagBtn').onclick=()=>action('multiplayer');
  return true;
 }
 
 function boot(){
  const a=installExplore();
  const n=installNeonTag();
- return a&&n;
+ return a||n;
 }
 
-if(!boot()){
- const mo=new MutationObserver(()=>{if(boot())mo.disconnect()});
+function observe(){
+ if(boot()&&document.getElementById('dfNeonTagWrap'))return;
+ const mo=new MutationObserver(()=>boot());
  mo.observe(document.body,{childList:true,subtree:true});
- setTimeout(()=>mo.disconnect(),15000);
 }
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',observe,{once:true});else observe();
 })();
