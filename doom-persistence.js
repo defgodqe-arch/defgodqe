@@ -20,6 +20,7 @@ function db(){
 async function put(id,blob,meta){const d=await db();return new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put({id,blob,meta,updatedAt:Date.now()});t.oncomplete=res;t.onerror=()=>rej(t.error);});}
 async function all(){const d=await db();return new Promise((res,rej)=>{const t=d.transaction(STORE,'readonly');const r=t.objectStore(STORE).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);});}
 async function get(id){const d=await db();return new Promise((res,rej)=>{const t=d.transaction(STORE,'readonly');const r=t.objectStore(STORE).get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function remove(id){const d=await db();return new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).delete(id);t.oncomplete=res;t.onerror=()=>rej(t.error);});}
 function readMeta(){try{const x=JSON.parse(localStorage.getItem(META)||'[]');return Array.isArray(x)?x:[]}catch{return[]}}
 function writeMeta(x){try{localStorage.setItem(META,JSON.stringify(x))}catch(e){console.warn('doom metadata storage full',e)}}
 async function restore(){
@@ -44,9 +45,7 @@ async function captureLocalPost(){
   row.url=URL.createObjectURL(file); writeMeta(arr);
  }catch(e){console.warn('defgodqe doom save failed',e)}
 }
-// Run before the feed is opened so persisted blobs become valid object URLs again.
 restore();
-// The existing publisher remains in charge of UI; we additionally vault the selected file.
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#dfOPost');if(b)captureLocalPost();},true);
-window.defgodqeDoomVault={put,get,all,restore};
+window.defgodqeDoomVault={put,get,all,remove,restore};
 })();
