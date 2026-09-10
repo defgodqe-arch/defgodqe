@@ -1,9 +1,4 @@
-/* defgodqe — browser-side feature loader
- *
- * The project contains a large collection of legacy browser scripts. Loading
- * them at runtime keeps Vite/Rollup from trying to parse every legacy file as
- * part of the production module graph while preserving the existing app.
- */
+/* defgodqe — browser-side feature loader */
 (function () {
   "use strict";
 
@@ -50,37 +45,30 @@
     "direct-messages.js"
   ];
 
-  // This is the previous working core hosted in the defgodqe-ai repository.
-  // It is intentionally loaded as a browser module instead of a Rollup import.
+  // Use the live main branch. The previous pinned SHA no longer exists.
   const remoteCore =
-    "https://cdn.jsdelivr.net/gh/defgodqe-arch/defgodqe-ai@013d26575d03aebd4c6dbc6bb62427f5650d2a93/app.js";
+    "https://cdn.jsdelivr.net/gh/defgodqe-arch/defgodqe-ai@main/app.js";
 
   function loadScript(src, module) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const script = document.createElement("script");
       script.src = src;
       script.async = false;
       if (module) script.type = "module";
-
       script.onload = () => resolve();
       script.onerror = () => {
         console.warn("[defgodqe] Feature failed to load:", src);
-        // Non-critical enhancement scripts should not prevent the rest of the
-        // application from starting.
         resolve();
       };
-
       document.head.appendChild(script);
     });
   }
 
   async function boot() {
     const base = new URL("./", window.location.href);
-
     for (const file of localScripts) {
       await loadScript(new URL(file, base).href, false);
     }
-
     await loadScript(remoteCore, true);
     window.dispatchEvent(new CustomEvent("defgodqe:features-ready"));
   }
@@ -88,6 +76,6 @@
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot, { once: true });
   } else {
-    boot();
+    void boot();
   }
 })();
