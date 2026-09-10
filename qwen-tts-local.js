@@ -92,3 +92,5 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installVoiceCloneUI, {once:true}); else installVoiceCloneUI();
 })();
+
+import './game-sidebar.js';
