@@ -30,6 +30,7 @@ import './doom-ultra.js';
 import './doom-1000.js';
 import './auth.js';
 import './mini-games-ultimate.js';
+import './multiplayer-game.js';
 import './app-boost.js';
 import './defgodqe-mega.js';
 import './realism-layer.js';
