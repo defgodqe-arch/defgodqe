@@ -1,112 +1,167 @@
-/* defgodqe mobile polish */
+/* defgodqe — mobile app / PWA polish */
 
 @media (max-width: 1023px) {
-  html, body { width: 100%; height: 100%; overflow: hidden; }
+  :root { --mobile-safe-top: env(safe-area-inset-top, 0px); --mobile-safe-bottom: env(safe-area-inset-bottom, 0px); }
 
+  html, body { width:100%; height:100%; min-height:100dvh; overflow:hidden; }
+  body { overscroll-behavior:none; -webkit-text-size-adjust:100%; }
+
+  /* Drawer */
   #sidebar {
-    width: min(86vw, 320px);
-    box-shadow: 18px 0 50px rgba(0,0,0,.45);
-    padding-top: env(safe-area-inset-top);
+    position:fixed !important;
+    inset:0 auto 0 0 !important;
+    width:min(88vw, 330px) !important;
+    height:100dvh !important;
+    z-index:60 !important;
+    transform:translate3d(-105%,0,0);
+    padding-top:var(--mobile-safe-top);
+    box-shadow:18px 0 55px rgba(0,0,0,.5);
+    will-change:transform;
   }
+  #sidebar.open { transform:translate3d(0,0,0) !important; }
+  #sidebarBackdrop {
+    z-index:55 !important;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  #sidebarBackdrop:not(.hidden) { opacity:1; pointer-events:auto; }
 
-  #sidebarBackdrop { backdrop-filter: blur(3px); }
+  /* Main app always fills the phone; never gets squeezed by the drawer. */
+  body > div.flex.h-screen.w-screen { width:100vw; height:100dvh; }
+  main { width:100%; min-width:0; height:100dvh; }
 
   header {
-    min-height: 56px;
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
+    min-height:calc(56px + var(--mobile-safe-top));
+    height:auto;
+    padding-top:calc(8px + var(--mobile-safe-top));
+    padding-bottom:8px;
+    padding-left:max(10px, var(--mobile-safe-top));
+    padding-right:max(10px, env(safe-area-inset-right, 0px));
+    gap:4px;
+    overflow:hidden;
   }
 
   #openSidebar, #webBtn, #voiceBtn, #modelBtn, #modeBtn,
-  #attachBtn, #imgBtn, #stopBtn, #sendBtn {
-    min-width: 42px;
-    min-height: 42px;
+  #attachBtn, #imgBtn, #stopBtn, #sendBtn, #voiceClose {
+    min-width:44px;
+    min-height:44px;
+    touch-action:manipulation;
   }
 
-  #modelBtn { max-width: 42vw; padding-left: 8px; padding-right: 8px; }
-  #modelLabel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #modeBtn { padding-left: 9px; padding-right: 9px; }
+  #openSidebar { flex:0 0 44px; }
+  #modelBtn { max-width:42vw; min-width:0; padding-left:8px; padding-right:8px; }
+  #modelLabel { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #modeBtn { max-width:31vw; min-width:0; padding-left:8px; padding-right:8px; }
+  #modeLabel { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #webBtn, #voiceBtn { flex:0 0 44px; padding:6px; }
+  #webBtn span, #voiceBtn span { display:none; }
+  header > .ml-auto { gap:2px; flex-shrink:0; }
+
+  #modelMenu, #modeMenu {
+    position:fixed !important;
+    left:10px !important;
+    right:10px !important;
+    top:calc(58px + var(--mobile-safe-top)) !important;
+    width:auto !important;
+    max-height:60dvh;
+    overflow:auto;
+    z-index:100 !important;
+    border-radius:16px !important;
+    box-shadow:0 18px 55px rgba(0,0,0,.55);
+  }
 
   #scroll {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    min-height:0;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    padding-bottom:0;
   }
 
   #welcome {
-    min-height: 100%;
-    padding: 28px 16px 150px;
+    min-height:100%;
+    height:auto;
+    padding:24px 14px calc(135px + var(--mobile-safe-bottom));
+    justify-content:center;
   }
+  .orb { width:70px; height:70px; margin-bottom:18px; }
+  #welcome h1 { font-size:clamp(1.6rem,8vw,2.1rem); line-height:1.15; }
+  #welcome p { max-width:340px; font-size:14px; line-height:1.55; }
+  #suggestGrid { width:100%; max-width:520px; grid-template-columns:1fr !important; gap:8px; margin-top:22px; }
+  #suggestGrid button { min-height:50px; text-align:left; touch-action:manipulation; }
 
-  .orb { width: 70px; height: 70px; margin-bottom: 18px; }
-  #welcome h1 { font-size: clamp(1.65rem, 8vw, 2.15rem); }
-  #welcome p { font-size: 14px; line-height: 1.6; }
+  #messages { width:100%; max-width:none; padding:18px 14px calc(135px + var(--mobile-safe-bottom)); }
+  .msg-in { max-width:100%; }
+  .prose-df { font-size:15px; line-height:1.65; }
+  .prose-df pre { max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .codeblock { max-width:100%; overflow:hidden; }
+  .codeblock pre { overflow-x:auto; padding:.75em; }
+  .gen-img { max-width:100%; height:auto; }
+  .web-source { min-height:48px; padding:10px; }
+  .msg-actions { flex-wrap:wrap; }
+  .msg-actions button { min-width:42px; min-height:42px; padding:8px; touch-action:manipulation; }
 
-  #suggestGrid {
-    width: 100%;
-    grid-template-columns: 1fr !important;
-    gap: 8px;
+  /* Bottom composer behaves like a native mobile chat bar. */
+  main > div:last-child {
+    flex:0 0 auto;
+    padding:7px 7px calc(7px + var(--mobile-safe-bottom));
+    background:linear-gradient(to top, rgba(8,11,17,.98), rgba(8,11,17,.82), transparent);
+    z-index:20;
   }
-
-  #suggestGrid button {
-    min-height: 48px;
-    text-align: left;
-  }
-
+  #attachRow { max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .attachment-card { flex:0 0 auto; max-width:78vw; }
   #composer {
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-    margin-left: 8px;
-    margin-right: 8px;
-    margin-bottom: max(8px, env(safe-area-inset-bottom));
-    border-radius: 18px !important;
-    padding: 6px !important;
-    box-shadow: 0 -8px 30px rgba(0,0,0,.18);
+    position:relative;
+    width:100%;
+    margin:0;
+    border-radius:19px !important;
+    padding:5px !important;
+    box-shadow:0 -4px 25px rgba(0,0,0,.2);
   }
-
   #input {
-    min-height: 42px !important;
-    max-height: 140px !important;
-    font-size: 16px !important;
-    padding: 10px 8px !important;
+    min-height:44px !important;
+    max-height:150px !important;
+    font-size:16px !important;
+    line-height:1.4;
+    padding:10px 7px !important;
   }
+  #attachBtn, #imgBtn, #stopBtn, #sendBtn { width:44px; height:44px; flex:0 0 44px; }
 
-  #attachRow { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .attachment-card { flex: 0 0 auto; max-width: 78vw; }
+  /* Voice overlay uses the full dynamic viewport and avoids notch/home-bar overlap. */
+  #voiceOverlay { height:100dvh; padding-top:var(--mobile-safe-top); padding-bottom:var(--mobile-safe-bottom); }
+  #vStage { width:min(78vw,340px) !important; height:min(78vw,340px) !important; }
+  #voiceOverlay select { max-width:42vw; }
 
-  .prose-df { font-size: 15px; line-height: 1.65; }
-  .prose-df table { max-width: 100%; }
-  .codeblock pre { padding: .8em; }
-  .codeblock code { font-size: 12px; }
-  .gen-img { max-width: 100%; }
-
-  .msg-actions button {
-    min-width: 40px;
-    min-height: 38px;
-    padding: 7px 9px;
-  }
-
-  .web-source { min-height: 48px; padding: 10px; }
+  /* Prevent accidental sideways scrolling from long responses. */
+  img, video, canvas, table { max-width:100%; }
+  table { display:block; overflow-x:auto; }
 }
 
-@media (max-width: 480px) {
-  header { gap: 2px; }
-  #modelBtn { max-width: 36vw; }
-  #modeBtn { max-width: 31vw; }
-  #modeLabel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #webBtn { padding: 6px 9px; }
-  #voiceBtn { padding: 6px 9px; }
-  #welcome { padding-left: 12px; padding-right: 12px; }
-  #composer { margin-left: 5px; margin-right: 5px; }
+@media (max-width:600px) {
+  #modelBtn { max-width:34vw; }
+  #modeBtn { max-width:27vw; }
+  #modeBtn .text-xs { max-width:100%; }
+  #welcome { padding-left:12px; padding-right:12px; }
 }
 
-@media (max-width: 380px) {
-  #modeBtn { max-width: 29vw; }
-  #modelBtn { max-width: 34vw; }
-  #webBtn span, #voiceBtn span { display: none; }
+@media (max-width:380px) {
+  header { gap:1px; padding-left:6px; padding-right:6px; }
+  #modelBtn { max-width:31vw; }
+  #modeBtn { max-width:25vw; }
+  #webBtn, #voiceBtn { min-width:42px; width:42px; }
+  #openSidebar { min-width:42px; width:42px; }
+  #attachBtn, #imgBtn, #stopBtn, #sendBtn { min-width:42px; width:42px; }
+  #input { padding-left:5px !important; padding-right:5px !important; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sidebar { transition: none; }
-  .orb { animation: none; }
+@media (orientation:landscape) and (max-height:520px) {
+  #welcome { padding-top:12px; padding-bottom:100px; }
+  .orb { width:52px; height:52px; margin-bottom:10px; }
+  #suggestGrid { margin-top:12px; }
+  #suggestGrid button { min-height:42px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .sidebar, #sidebarBackdrop { transition:none !important; }
+  .orb { animation:none !important; }
 }
