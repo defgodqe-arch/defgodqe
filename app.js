@@ -1,4 +1,4 @@
-/* defgodqe — restored working core + modern visual layer */
+/* defgodqe — restored working core + unified old-style app shell */
 import './space-fix.js';
 import './audio-fix.js';
 import './social-platform.js';
@@ -35,3 +35,4 @@ import './realism-layer.js';
 import './web-search-fix.js';
 import './direct-messages.js';
 import './ui-theme.js';
+import './old-look-shell.js';
