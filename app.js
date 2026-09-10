@@ -26,3 +26,4 @@ import './doom-ultra.js';
 import './auth.js';
 import './mini-games-ultimate.js';
 import './app-boost.js';
+import './space-fix.js';
