@@ -1,10 +1,9 @@
-/* defgodqe — Doom Scroll: fullscreen vertical YouTube video feed */
+/* defgodqe — Doom Scroll: optimized fullscreen vertical YouTube video feed */
 (function(){
 'use strict';
 if(window.__defgodqeDoomScroll)return;
 window.__defgodqeDoomScroll=true;
 
-/* YouTube remains the video source so its normal YouTube branding is preserved. */
 const VIDEO_IDS=['SiUXHEvd_rA','G1DG_OV5oww','o6XRvViYlug','N3cAVsH5pW4','V6bPomtNnis','YpecVts2qqc','wLaM_GLdZto','Pvl12OOpSXM','RBYgcczTUYs','i8-YZWlSJFk','meEy3Jg4INM','HvaXcZAVpB8','QfYwCuvhgGE','hKT2kCj6V-I','PURhWbQOjew','uqN5jWFYS00','ciIAcD4eXsI','dq8xGCBSBcQ','ZtVfmhhZrkg','TciQ1iOKBkA','cu61ElxVFlo','G4NzI382ZM','40j6qvMDVrE','NSmY5cVTBB4','8jCzEQPz9n0','Sca9-pD1lXo','LLoUQnD_UdM','9ldmPrQRGj4','SNI4d-mMgcA'];
 const VIDEO_COUNT=1000;
 const slots=Array.from({length:VIDEO_COUNT},(_,i)=>i);
@@ -12,15 +11,13 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()
 let order=shuffle(slots.slice());
 
 const style=document.createElement('style');style.textContent=`
-#dfDoomOverlay{position:fixed;inset:0;z-index:99990;background:#000;display:none;overflow:hidden}
+#dfDoomOverlay{position:fixed;inset:0;z-index:99990;background:#000;display:none;overflow:hidden;contain:strict}
 #dfDoomOverlay.df-open{display:block}
-#dfDoomFeed{position:absolute;inset:0;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y}
+#dfDoomFeed{position:absolute;inset:0;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y;contain:strict;-webkit-overflow-scrolling:touch}
 #dfDoomFeed::-webkit-scrollbar{display:none}
-.df-doom-card{height:100dvh;min-height:100dvh;width:100%;scroll-snap-align:start;scroll-snap-stop:always;background:#000}
-.df-doom-player{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:99991!important;background:#000;pointer-events:none!important}
-#dfDoomPlayer{display:block!important;width:100vw!important;height:100dvh!important;border:0!important;background:#000!important;pointer-events:none!important;visibility:visible!important;opacity:1!important}
-/* Keep the YouTube video visible, but prevent the iframe from receiving clicks/hover,
-   which prevents the giant YouTube pause/play overlay from being triggered by the feed. */
+.df-doom-card{height:100dvh;min-height:100dvh;width:100%;scroll-snap-align:start;background:#000;contain:strict}
+.df-doom-player{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:99991!important;background:#000;pointer-events:none!important;contain:strict}
+#dfDoomPlayer{display:block!important;width:100vw!important;height:100dvh!important;border:0!important;background:#000!important;pointer-events:none!important;visibility:visible!important;opacity:1!important;contain:strict}
 #dfDoomPlayer iframe{pointer-events:none!important}
 #dfDoomExit{position:fixed;top:18px;right:18px;z-index:100000;width:46px;height:46px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(15,15,20,.78);backdrop-filter:blur(12px);color:#fff;font-size:26px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.35);transition:transform .15s ease,background .15s ease}
 #dfDoomExit:hover{transform:scale(1.08);background:rgba(40,40,48,.9)}
@@ -35,10 +32,11 @@ document.body.appendChild(overlay);
 const feed=overlay.querySelector('#dfDoomFeed');
 const exitBtn=overlay.querySelector('#dfDoomExit');
 
+/* Only lightweight snap targets are created. The browser handles scrolling; no video
+   elements or players are created per card. */
 for(let i=0;i<VIDEO_COUNT;i++){
   const c=document.createElement('section');
   c.className='df-doom-card';
-  c.dataset.index=i;
   feed.appendChild(c);
 }
 
@@ -48,6 +46,7 @@ playerWrap.innerHTML='<div id="dfDoomPlayer"></div>';
 overlay.appendChild(playerWrap);
 
 let ytPlayer=null,ytReady=false,activeIndex=-1,isOpen=false,playToken=0;
+let scrollTimer=0;
 function videoIdFor(position){return VIDEO_IDS[order[position]%VIDEO_IDS.length]}
 function ensureYouTube(){
   if(window.YT&&window.YT.Player){createPlayer();return}
@@ -55,6 +54,7 @@ function ensureYouTube(){
   const s=document.createElement('script');
   s.id='dfDoomYTApi';
   s.src='https://www.youtube.com/iframe_api';
+  s.async=true;
   document.head.appendChild(s);
   const previous=window.onYouTubeIframeAPIReady;
   window.onYouTubeIframeAPIReady=function(){
@@ -65,34 +65,14 @@ function ensureYouTube(){
 function createPlayer(){
   if(ytPlayer||!window.YT||!window.YT.Player)return;
   ytPlayer=new YT.Player('dfDoomPlayer',{
-    width:'100%',
-    height:'100%',
-    videoId:videoIdFor(Math.max(0,activeIndex)),
-    playerVars:{
-      autoplay:0,
-      controls:0,
-      playsinline:1,
-      rel:0,
-      enablejsapi:1,
-      disablekb:1,
-      fs:0,
-      iv_load_policy:3,
-      cc_load_policy:0,
-      modestbranding:1,
-      origin:location.origin
-    },
+    width:'100%',height:'100%',videoId:videoIdFor(Math.max(0,activeIndex)),
+    playerVars:{autoplay:0,controls:0,playsinline:1,rel:0,enablejsapi:1,disablekb:1,fs:0,iv_load_policy:3,cc_load_policy:0,modestbranding:1,origin:location.origin},
     events:{
-      onReady:function(){
-        ytReady=true;
-        if(isOpen&&activeIndex>=0)loadActive(true);
-      },
+      onReady:function(){ytReady=true;if(isOpen&&activeIndex>=0)loadActive(true)},
       onStateChange:function(event){
-        /* If YouTube briefly enters paused state while the next short is loading,
-           immediately resume it. This keeps the giant pause overlay from lingering. */
         if(isOpen&&event.data===2){
-          setTimeout(()=>{
-            if(isOpen&&ytReady&&ytPlayer)try{ytPlayer.playVideo()}catch(_){}
-          },60);
+          clearTimeout(window.__dfDoomResumeTimer);
+          window.__dfDoomResumeTimer=setTimeout(()=>{if(isOpen&&ytReady&&ytPlayer)try{ytPlayer.playVideo()}catch(_){}},80);
         }
       },
       onError:function(){}
@@ -104,27 +84,28 @@ function loadActive(auto){
   const id=videoIdFor(activeIndex),token=++playToken;
   try{
     ytPlayer.loadVideoById(id);
-    setTimeout(()=>{
-      if(isOpen&&token===playToken&&auto)try{
-        ytPlayer.playVideo();
-        ytPlayer.unMute();
-        ytPlayer.setVolume(100);
-      }catch(_){}
-    },200);
+    if(auto){
+      setTimeout(()=>{
+        if(isOpen&&token===playToken&&ytPlayer)try{ytPlayer.playVideo();ytPlayer.unMute();ytPlayer.setVolume(100)}catch(_){}
+      },120);
+    }
   }catch(_){}
 }
-function playAt(position){
+function playAt(position,immediate){
   if(!isOpen||position<0||position>=VIDEO_COUNT)return;
+  if(position===activeIndex&&!immediate)return;
   activeIndex=position;
   if(!ytPlayer){ensureYouTube();return}
   loadActive(true);
 }
+function getIndex(){return Math.max(0,Math.min(VIDEO_COUNT-1,Math.round(feed.scrollTop/Math.max(1,innerHeight))))}
 function goToVideo(direction){
   if(!isOpen)return;
   const next=Math.max(0,Math.min(VIDEO_COUNT-1,activeIndex+direction));
   if(next===activeIndex)return;
-  feed.scrollTo({top:next*Math.max(1,innerHeight),behavior:'smooth'});
-  playAt(next);
+  /* Instant scroll is noticeably smoother than animating a full-screen snap target. */
+  feed.scrollTop=next*Math.max(1,innerHeight);
+  playAt(next,true);
 }
 function open(){
   isOpen=true;
@@ -140,6 +121,8 @@ function open(){
 function close(){
   isOpen=false;
   playToken++;
+  clearTimeout(scrollTimer);
+  clearTimeout(window.__dfDoomResumeTimer);
   if(ytReady&&ytPlayer)try{ytPlayer.stopVideo()}catch(_){}
   overlay.classList.remove('df-open');
   document.body.style.overflow='';
@@ -148,18 +131,16 @@ window.defgodqeDoomScrollOpen=open;
 window.defgodqeDoomScrollClose=close;
 exitBtn.addEventListener('click',close);
 
-let scrollRaf=0;
+/* Never call YouTube while the user is actively scrolling. Wait until scrolling settles. */
 feed.addEventListener('scroll',()=>{
-  if(scrollRaf)return;
-  scrollRaf=requestAnimationFrame(()=>{
-    scrollRaf=0;
-    if(!isOpen)return;
-    const i=Math.max(0,Math.min(VIDEO_COUNT-1,Math.round(feed.scrollTop/Math.max(1,innerHeight))));
-    if(i!==activeIndex)playAt(i);
-  });
+  if(!isOpen)return;
+  clearTimeout(scrollTimer);
+  scrollTimer=setTimeout(()=>{
+    const i=getIndex();
+    if(i!==activeIndex)playAt(i,true);
+  },140);
 },{passive:true});
 
-/* Mouse-wheel video switching: one wheel movement = one short. */
 let wheelLocked=false;
 feed.addEventListener('wheel',e=>{
   if(!isOpen)return;
@@ -167,7 +148,7 @@ feed.addEventListener('wheel',e=>{
   if(wheelLocked)return;
   wheelLocked=true;
   goToVideo(e.deltaY>0?1:-1);
-  window.setTimeout(()=>{wheelLocked=false},350);
+  window.setTimeout(()=>{wheelLocked=false},260);
 },{passive:false});
 
 document.addEventListener('keydown',e=>{
