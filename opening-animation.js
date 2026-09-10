@@ -56,7 +56,99 @@
     setTimeout(() => splash.remove(), 650);
   };
 
-  // Give the logo a moment to appear, then reveal the real app.
   window.addEventListener('load', () => setTimeout(hide, 1500), { once:true });
   setTimeout(hide, 2600);
+
+  /* ============================================================
+     UI RECOVERY
+     The main app must never depend on optional feature scripts to
+     make the sidebar controls visible. This small layer creates the
+     launchers directly and retries until the sidebar is available.
+     ============================================================ */
+  function loadOptional(src) {
+    return new Promise(resolve => {
+      if (document.querySelector(`script[data-defgodqe-src="${src}"]`)) return resolve();
+      const s = document.createElement('script');
+      s.src = src;
+      s.async = false;
+      s.dataset.defgodqeSrc = src;
+      s.onload = () => resolve();
+      s.onerror = () => resolve();
+      document.head.appendChild(s);
+    });
+  }
+
+  function installSidebarLaunchers() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return false;
+    const authRow = sidebar.querySelector('#authRow');
+    const footer = authRow ? authRow.parentElement : sidebar.lastElementChild;
+    if (!footer) return false;
+
+    if (!document.getElementById('dfRecoveryTools')) {
+      const box = document.createElement('div');
+      box.id = 'dfRecoveryTools';
+      box.innerHTML = `
+        <div class="df-recovery-title">EXPLORE</div>
+        <button type="button" data-recovery="doom"><span>📱</span><b>Doom Scroll</b><small>Short videos</small></button>
+        <button type="button" data-recovery="neon"><span>⚡</span><b>Neon Tag</b><small>Laser freeze arena</small></button>
+        <button type="button" data-recovery="games"><span>🎮</span><b>Mini Games</b><small>Play the arcade</small></button>
+        <button type="button" data-recovery="features"><span>✨</span><b>Feature Lab</b><small>More defgodqe tools</small></button>
+      `;
+      const st = document.createElement('style');
+      st.textContent = `
+        #dfRecoveryTools{display:grid;gap:6px;padding:8px 12px 10px;flex:none!important;visibility:visible!important;opacity:1!important}
+        #dfRecoveryTools .df-recovery-title{font:800 10px/1 Inter,system-ui,sans-serif;letter-spacing:.14em;color:#64748b;padding:2px 4px 5px}
+        #dfRecoveryTools button{position:relative!important;display:flex!important;align-items:center!important;width:100%!important;min-height:42px!important;box-sizing:border-box!important;gap:9px!important;padding:9px 10px!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:12px!important;background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.018))!important;color:#e5e7eb!important;text-align:left!important;cursor:pointer!important;font:600 12px Inter,system-ui,sans-serif!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+        #dfRecoveryTools button:hover{border-color:rgba(250,204,21,.55)!important;background:rgba(250,204,21,.08)!important;transform:translateX(2px)}
+        #dfRecoveryTools button span{width:22px;text-align:center;font-size:16px}
+        #dfRecoveryTools button b{color:#f8fafc;flex:1}
+        #dfRecoveryTools button small{font-size:9px;color:#64748b;font-weight:600}
+        #dfRecoveryTools button:nth-of-type(2){border-color:rgba(250,204,21,.4)!important;background:rgba(250,204,21,.08)!important}
+        #dfRecoveryTools button:nth-of-type(2) b{color:#fde68a}
+      `;
+      document.head.appendChild(st);
+      footer.before(box);
+
+      box.querySelector('[data-recovery="doom"]').onclick = async () => {
+        await loadOptional('./doom-scroll.js');
+        if (window.defgodqeDoomScrollOpen) window.defgodqeDoomScrollOpen();
+        else document.getElementById('dfDoomScrollBtn')?.click();
+      };
+      box.querySelector('[data-recovery="neon"]').onclick = async () => {
+        await loadOptional('./multiplayer-game.js');
+        if (window.defgodqeMultiplayer?.open) window.defgodqeMultiplayer.open();
+        else document.getElementById('dfNeonTagBtn')?.click();
+      };
+      box.querySelector('[data-recovery="games"]').onclick = async () => {
+        await loadOptional('./mini-game.js');
+        document.getElementById('dfGameBtn')?.click();
+      };
+      box.querySelector('[data-recovery="features"]').onclick = async () => {
+        await loadOptional('./features.js');
+        if (window.defgodqeOpenFeatureLab) window.defgodqeOpenFeatureLab();
+      };
+    }
+    return true;
+  }
+
+  function recover() {
+    installSidebarLaunchers();
+    const splashNode = document.getElementById('defgodqe-startup');
+    if (splashNode) {
+      splashNode.style.pointerEvents = 'none';
+      splashNode.style.setProperty('z-index','1','important');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', recover, {once:true});
+  } else {
+    recover();
+  }
+  const recoveryTimer = setInterval(() => {
+    recover();
+    if (document.getElementById('dfRecoveryTools')) clearInterval(recoveryTimer);
+  }, 500);
+  setTimeout(() => clearInterval(recoveryTimer), 10000);
 })();
