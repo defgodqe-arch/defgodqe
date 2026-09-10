@@ -17,3 +17,5 @@ import './doom-social.js';
 import './doom-social-entry.js';
 import './sidebar-extras.js';
 import './doom-mobile-fix.js';
+import './doom-replay.js';
+import './doom-owned.js';
