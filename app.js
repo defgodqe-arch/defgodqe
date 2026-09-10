@@ -9,3 +9,4 @@ import './pwa.js';
 import './futuristic.js';
 import './mini-game.js';
 import './game-sounds.js';
+import './cool-stuff.js';
