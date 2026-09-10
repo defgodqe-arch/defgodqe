@@ -12,6 +12,7 @@ import './game-sounds.js';
 import './cool-stuff.js';
 import './feature-pack.js';
 import './doom-scroll.js';
+import './youtube-random-feed.js';
 import './doom-social.js';
 import './doom-social-entry.js';
 import './sidebar-extras.js';
