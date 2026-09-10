@@ -5,7 +5,6 @@
   window.__defgodqeDoomScroll = true;
 
   // A mix of Minecraft, Zack D. Films, history, and other short-form videos.
-  // Videos remain hosted and played by YouTube; defgodqe does not copy or re-host them.
   const videos = [
     { id: 'YWOuN6w4Yqs', title: 'Zack D. Films — Quick Story', creator: 'Zack D. Films', tag: 'ZACK' },
     { id: '-Bybm8MNcaA', title: 'Minecraft Shorts Compilation', creator: 'Minecraft', tag: 'MINECRAFT' },
@@ -16,7 +15,6 @@
     { id: 'oW8Tb4Mpd3s', title: 'I Tested Every Zack D. Films Video', creator: 'Sambucha', tag: 'CREATORS' }
   ];
 
-  // Warm up YouTube before the first card is displayed.
   ['https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://i.ytimg.com'].forEach(href => {
     const link = document.createElement('link');
     link.rel = 'preconnect';
@@ -44,6 +42,11 @@
     .df-doom-hint{position:absolute;top:50%;right:8px;transform:translateY(-50%);writing-mode:vertical-rl;color:rgba(255,255,255,.55);font-size:11px;letter-spacing:.12em;pointer-events:none}
     .df-doom-loading{position:absolute;z-index:2;display:grid;place-items:center;width:58px;height:58px;border:3px solid rgba(250,204,21,.18);border-top-color:#facc15;border-radius:50%;animation:dfDoomSpin .8s linear infinite;pointer-events:none}
     @keyframes dfDoomSpin{to{transform:rotate(360deg)}}
+    /* Match the Mini arcade sidebar button exactly: same wrapper, spacing, border, background, typography and shine. */
+    #dfDoomBtn{position:relative;overflow:hidden}
+    #dfDoomBtn::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(250,204,21,.22),transparent);transform:translateX(-100%);animation:dfDoomShine 2.5s infinite;pointer-events:none}
+    @keyframes dfDoomShine{60%,100%{transform:translateX(100%)}}
+    #dfDoomBtn:hover{background:rgba(250,204,21,.10)!important}
     @media(max-width:600px){.df-doom-info{bottom:24px;left:14px;right:74px}.df-doom-actions{right:12px;bottom:24px}.df-doom-title{font-size:17px}.df-doom-video{width:100vw;height:100dvh;object-fit:cover}}
   `;
   document.head.appendChild(style);
@@ -84,7 +87,6 @@
     if (!frame.src || frame.src === location.href || frame.src === 'about:blank') frame.src = frame.dataset.src;
   };
 
-  // Load the current card plus one ahead. Keep loaded frames alive so scrolling back is instant.
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
@@ -122,13 +124,11 @@
     feed.scrollTop = 0;
     loadFrame(frames[0]);
     loadFrame(frames[1]);
-    // Opening Doom Scroll is a direct user gesture, so immediately request full-volume playback.
     setTimeout(boostCurrentAudio, 250);
   }
   function close() {
     overlay.classList.remove('df-open');
     document.body.style.overflow = '';
-    // Keep the iframes warm for faster reopening instead of destroying/reloading them.
   }
   window.defgodqeDoomScrollOpen = open;
   window.defgodqeDoomScrollClose = close;
@@ -153,16 +153,17 @@
     if (document.getElementById('dfDoomBtn')) return true;
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return false;
-    const button = document.createElement('button');
-    button.id = 'dfDoomBtn';
-    button.type = 'button';
-    button.title = 'Doom Scroll';
-    button.setAttribute('aria-label','Open Doom Scroll');
-    button.innerHTML = '<span style="font-size:18px">📱</span><span>Doom scroll</span><span style="margin-left:auto;font-size:10px;opacity:.6">SHORTS</span>';
-    button.style.cssText = 'width:calc(100% - 24px);margin:10px 12px;padding:11px 12px;display:flex;align-items:center;gap:10px;border:1px solid rgba(250,204,21,.28);border-radius:12px;background:rgba(250,204,21,.07);color:inherit;cursor:pointer;font-weight:700;text-align:left;';
-    button.addEventListener('click', open);
-    const newChat = document.getElementById('newChatBtn');
-    (newChat?.parentElement || sidebar).after(button);
+    const user = sidebar.querySelector('#authRow')?.parentElement;
+    if (!user) return false;
+
+    // Use the exact same wrapper and button classes as Mini arcade, then sit directly beside it.
+    const wrap = document.createElement('div');
+    wrap.className = 'px-3 pb-2';
+    wrap.innerHTML = '<button id="dfDoomBtn" type="button" class="flex w-full items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-brand/10"><span style="font-size:17px">📱</span><span>Doom scroll</span><span style="margin-left:auto;font-size:10px;color:#facc15">SHORTS</span></button>';
+    const mini = sidebar.querySelector('#dfGameBtn')?.closest('.px-3.pb-2');
+    if (mini) mini.after(wrap);
+    else user.before(wrap);
+    document.getElementById('dfDoomBtn').onclick = open;
     return true;
   }
   if (!addSidebarButton()) {
