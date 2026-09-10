@@ -1,7 +1,6 @@
 /* defgodqe — randomized YouTube Shorts catalog
- * Generates up to 1000 candidate videos from a rotating set of search topics.
- * No video downloading. Discovery uses the YouTube Data API when a key or
- * backend endpoint is configured; otherwise callers can inject candidates.
+ * Generates up to 1000 candidate videos from topics plus selected creator feeds.
+ * No video downloading. Uses YouTube's embeddable videos and optional API discovery.
  */
 (function(){
 'use strict';
@@ -19,32 +18,35 @@ const TOPICS=[
   'geography shorts','psychology facts','math shorts','physics shorts','chemistry shorts',
   'diy shorts','craft shorts','retro gaming','pokemon shorts','fortnite shorts','roblox shorts'
 ];
+
+/* Creator feeds requested for the Doom Scroll. Their actual uploads are
+ * discovered through the official YouTube API when configured. */
+const CREATOR_CHANNELS=[
+  {handle:'SypherPK',name:'SypherPK',topics:['fortnite','gaming','gaming shorts']},
+  {handle:'Mappelz',name:'Mappelz',topics:['gaming','gaming shorts']}
+];
+
+/* Public SypherPK Shorts found during feed setup. More are fetched dynamically. */
+const SEEDED_VIDEOS=[
+  {id:'KLJu0lnoftE',title:'The #1 Most Satisfying Fortnite Short',creator:'SypherPK',topics:['fortnite','gaming','gaming shorts']},
+  {id:'7gCytVbT714',title:'Worlds Most Satisfying Fortnite Short',creator:'SypherPK',topics:['fortnite','gaming','gaming shorts']}
+];
+
 const MAX=1000;
 const KEY='defgodqe_youtube_random_candidates';
-
 function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function seededShuffle(a,seed){let x=seed>>>0;const out=a.slice();for(let i=out.length-1;i>0;i--){x^=x<<13;x^=x>>>17;x^=x<<5;x>>>=0;const j=x%(i+1);[out[i],out[j]]=[out[j],out[i]]}return out}
 function clean(v){return v==null?'':String(v).trim()}
 function normalize(v){if(!v)return null;const id=clean(v.id||v.videoId);if(!/^[A-Za-z0-9_-]{6,20}$/.test(id))return null;return {provider:'youtube',id,title:clean(v.title)||'YouTube Short',creator:clean(v.creator||v.channelTitle)||'YouTube',topics:Array.isArray(v.topics)?v.topics.map(clean).filter(Boolean):[],duration:Number(v.duration)||0,description:clean(v.description)}}
-
-function getInjected(){
-  const values=Array.isArray(window.defgodqeYouTubeVideos)?window.defgodqeYouTubeVideos:[];
-  return values.map(normalize).filter(Boolean);
-}
+function getInjected(){const values=Array.isArray(window.defgodqeYouTubeVideos)?window.defgodqeYouTubeVideos:[];return values.map(normalize).filter(Boolean)}
 function getSaved(){try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x.map(normalize).filter(Boolean):[]}catch{return []}}
 function save(values){try{localStorage.setItem(KEY,JSON.stringify(values.slice(0,MAX*2)))}catch{}}
+function unique(values){const map=new Map();for(const v of values){const n=normalize(v);if(n)map.set(n.id,n)}return [...map.values()]}
 
-/* Creates 1000 deterministic randomized slots from available candidates.
- * Repeated candidates are intentionally avoided when the catalog is large. */
 function build(count=MAX){
   count=Math.min(MAX,Math.max(1,Number(count)||MAX));
-  const all=[...getInjected(),...getSaved()];
-  const unique=[];const seen=new Set();
-  for(const v of all){const k=v.id;if(!seen.has(k)){seen.add(k);unique.push(v)}}
-  const shuffled=seededShuffle(unique,Date.now()>>>0);
+  const shuffled=seededShuffle(unique([...SEEDED_VIDEOS,...getInjected(),...getSaved()]),Date.now()>>>0);
   if(shuffled.length>=count)return shuffled.slice(0,count);
-  /* If fewer than 1000 unique videos are available, repeat only as slots so
-     the feed can still expose 1000 randomized positions without downloading media. */
   const out=[];let round=0;
   while(out.length<count&&shuffled.length){
     const batch=seededShuffle(shuffled,hash(String(Date.now())+':'+round));
@@ -55,48 +57,47 @@ function build(count=MAX){
 }
 
 window.defgodqeYouTubeRandomTopics=TOPICS.slice();
+window.defgodqeYouTubeCreatorChannels=CREATOR_CHANNELS.slice();
 window.defgodqeGetRandomYouTubeVideos=build;
-window.defgodqeSetYouTubeVideos=function(values){
-  const normalized=Array.isArray(values)?values.map(normalize).filter(Boolean):[];
-  window.defgodqeYouTubeVideos=normalized;
-  save(normalized);
-  return build(MAX);
-};
-window.defgodqeAddYouTubeVideos=function(values){
-  const current=getInjected().concat(getSaved());
-  const incoming=(Array.isArray(values)?values:[values]).map(normalize).filter(Boolean);
-  const map=new Map();for(const v of [...current,...incoming])map.set(v.id,v);
-  const merged=[...map.values()].slice(-MAX*2);
-  window.defgodqeYouTubeVideos=merged;save(merged);return build(MAX);
-};
-window.defgodqeYouTubeRandomFeedInfo=function(){
-  return {requested:MAX,availableUnique:new Set([...getInjected(),...getSaved()].map(v=>v.id)).size,topics:TOPICS.slice()};
-};
+window.defgodqeSetYouTubeVideos=function(values){window.defgodqeYouTubeVideos=Array.isArray(values)?unique(values):[];save(window.defgodqeYouTubeVideos);return build(MAX)};
+window.defgodqeAddYouTubeVideos=function(values){const merged=unique([...SEEDED_VIDEOS,...getInjected(),...getSaved(),...(Array.isArray(values)?values:[values])]);window.defgodqeYouTubeVideos=merged.slice(-MAX*2);save(window.defgodqeYouTubeVideos);return build(MAX)};
+window.defgodqeYouTubeRandomFeedInfo=function(){return {requested:MAX,availableUnique:new Set(unique([...SEEDED_VIDEOS,...getInjected(),...getSaved()]).map(v=>v.id)).size,creatorChannels:CREATOR_CHANNELS.slice(),topics:TOPICS.slice()}};
 
-/* Optional live discovery. Supply window.DEFGODQE_YOUTUBE_SEARCH_ENDPOINT
- * (recommended: a Cloudflare Worker proxy) or window.DEFGODQE_YOUTUBE_API_KEY.
- * The key is never hard-coded here. */
+/* Optional live discovery. Recommended: set a Cloudflare Worker endpoint in
+ * window.DEFGODQE_YOUTUBE_SEARCH_ENDPOINT. It receives q, channelHandle,
+ * maxResults, type=video and videoDuration=short. A YouTube API key can also
+ * be used directly during testing, but never commit the key to GitHub. */
 window.defgodqeFetchYouTubeRandom1000=async function(){
   const endpoint=clean(window.DEFGODQE_YOUTUBE_SEARCH_ENDPOINT);
   const apiKey=clean(window.DEFGODQE_YOUTUBE_API_KEY);
   const results=[];const seen=new Set();
+  async function request(params){
+    let url;
+    if(endpoint){const u=new URL(endpoint,location.href);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));url=u.toString()}
+    else if(apiKey){const u=new URL('https://www.googleapis.com/youtube/v3/search');u.searchParams.set('part','snippet');Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));u.searchParams.set('key',apiKey);url=u.toString()}
+    else return null;
+    try{const r=await fetch(url);return r.ok?await r.json():null}catch{return null}
+  }
+  /* First prioritize the two requested creators. */
+  for(const creator of CREATOR_CHANNELS){
+    if(results.length>=MAX)break;
+    let data=await request({q:creator.handle+' shorts',maxResults:'50',type:'video',videoDuration:'short',channelHandle:creator.handle});
+    if(!data&&apiKey)continue;
+    for(const item of (data?.items||[])){
+      const v=normalize({id:item.id?.videoId||item.videoId,title:item.snippet?.title,creator:item.snippet?.channelTitle||creator.name,description:item.snippet?.description,topics:creator.topics});
+      if(v&&!seen.has(v.id)){seen.add(v.id);results.push(v);if(results.length>=MAX)break}
+    }
+  }
+  /* Then fill the rest with broad Shorts discovery. */
   for(const topic of TOPICS){
     if(results.length>=MAX)break;
-    try{
-      let url;
-      if(endpoint){
-        const u=new URL(endpoint,location.href);u.searchParams.set('q',topic);u.searchParams.set('maxResults','50');u.searchParams.set('type','video');u.searchParams.set('videoDuration','short');url=u.toString();
-      }else if(apiKey){
-        const u=new URL('https://www.googleapis.com/youtube/v3/search');u.searchParams.set('part','snippet');u.searchParams.set('type','video');u.searchParams.set('videoDuration','short');u.searchParams.set('maxResults','50');u.searchParams.set('q',topic);u.searchParams.set('key',apiKey);url=u.toString();
-      }else break;
-      const response=await fetch(url);if(!response.ok)continue;const data=await response.json();
-      for(const item of (data.items||[])){
-        const v=normalize({id:item.id?.videoId||item.videoId,title:item.snippet?.title,creator:item.snippet?.channelTitle,description:item.snippet?.description,topics:[topic]});
-        if(v&&!seen.has(v.id)){seen.add(v.id);results.push(v);if(results.length>=MAX)break}
-      }
-    }catch{}
+    const data=await request({q:topic,maxResults:'50',type:'video',videoDuration:'short'});
+    for(const item of (data?.items||[])){
+      const v=normalize({id:item.id?.videoId||item.videoId,title:item.snippet?.title,creator:item.snippet?.channelTitle,description:item.snippet?.description,topics:[topic]});
+      if(v&&!seen.has(v.id)){seen.add(v.id);results.push(v);if(results.length>=MAX)break}
+    }
   }
-  if(results.length){window.defgodqeYouTubeVideos=results;save(results)}
+  if(results.length){window.defgodqeYouTubeVideos=unique(results);save(results)}
   return build(MAX);
 };
 })();
