@@ -1,6 +1,7 @@
 /* defgodqe — Owned Doom Feed
  * A first-party short-video surface: vertical snap feed, creator uploads,
  * likes/follows, share, explore tabs, local fallback, and optional social API.
+ * Optimized with aggressive current/next-video preloading for smoother scrolling.
  */
 (function(){
 'use strict';
@@ -35,9 +36,24 @@ async function loadPosts(){
  if(mode==='following')posts=posts.filter(x=>x.following||x.userId&&x.following===true);
  posts=shuffle(posts);
 }
-function card(v,i){return `<section class="df-o-card" data-i="${i}"><video class="df-o-video" src="${esc(v.url)}" playsinline loop preload="metadata"></video><div class="df-o-shade"></div><div class="df-o-info"><div class="df-o-user"><div class="df-o-avatar">${esc((v.user||'c')[0].toUpperCase())}</div><span>@${esc(v.user)}</span>${v.userId?`<button class="df-o-follow" data-follow="${esc(v.userId)}">Follow</button>`:''}</div><div class="df-o-title">${esc(v.title)}</div>${v.tags?`<div class="df-o-tags">${esc(v.tags)}</div>`:''}</div><div class="df-o-actions"><button class="df-o-act ${v.liked?'liked':''}" data-like="${esc(v.id)}">♥<small>${v.likes}</small></button><button class="df-o-act" data-comment="${esc(v.id)}">💬<small>Comment</small></button><button class="df-o-act" data-share="${esc(v.url)}">↗<small>Share</small></button></div></section>`}
-function render(){feed.innerHTML=posts.length?posts.map(card).join(''):`<div class="df-o-empty"><div><h2>Welcome to defgodqe Doom</h2><p>This is your first-party creator feed. Post your own videos and build the community here.</p><button class="df-o-btn primary" id="dfOEmptyPost">＋ Publish your first short</button></div></div>`;root.querySelector('#dfOEmptyPost')?.addEventListener('click',openUpload);setupObserver();playActive(0)}
-function playActive(i){const cards=[...feed.querySelectorAll('.df-o-card')];cards.forEach((c,n)=>{const v=c.querySelector('video');if(n===i){v.currentTime=0;v.muted=false;v.play().catch(()=>{v.muted=true;v.play().catch(()=>{})})}else{v.pause();v.currentTime=0;v.muted=true}});active=i}
+function card(v,i){return `<section class="df-o-card" data-i="${i}"><video class="df-o-video" src="${esc(v.url)}" playsinline loop preload="auto"></video><div class="df-o-shade"></div><div class="df-o-info"><div class="df-o-user"><div class="df-o-avatar">${esc((v.user||'c')[0].toUpperCase())}</div><span>@${esc(v.user)}</span>${v.userId?`<button class="df-o-follow" data-follow="${esc(v.userId)}">Follow</button>`:''}</div><div class="df-o-title">${esc(v.title)}</div>${v.tags?`<div class="df-o-tags">${esc(v.tags)}</div>`:''}</div><div class="df-o-actions"><button class="df-o-act ${v.liked?'liked':''}" data-like="${esc(v.id)}">♥<small>${v.likes}</small></button><button class="df-o-act" data-comment="${esc(v.id)}">💬<small>Comment</small></button><button class="df-o-act" data-share="${esc(v.url)}">↗<small>Share</small></button></div></section>`}
+function preloadAround(index){
+ const cards=[...feed.querySelectorAll('.df-o-card')];
+ cards.forEach((c,n)=>{
+  const v=c.querySelector('video');
+  if(!v)return;
+  const distance=Math.abs(n-index);
+  if(distance<=3){
+   v.preload='auto';
+   try{v.load()}catch{}
+   if(distance===1 && v.readyState<2){try{v.currentTime=0}catch{}}
+  }else if(distance>5){
+   v.preload='metadata';
+  }
+ });
+}
+function render(){feed.innerHTML=posts.length?posts.map(card).join(''):`<div class="df-o-empty"><div><h2>Welcome to defgodqe Doom</h2><p>This is your first-party creator feed. Post your own videos and build the community here.</p><button class="df-o-btn primary" id="dfOEmptyPost">＋ Publish your first short</button></div></div>`;root.querySelector('#dfOEmptyPost')?.addEventListener('click',openUpload);preloadAround(0);setupObserver();playActive(0)}
+function playActive(i){const cards=[...feed.querySelectorAll('.df-o-card')];preloadAround(i);cards.forEach((c,n)=>{const v=c.querySelector('video');if(n===i){v.preload='auto';v.currentTime=0;v.muted=false;v.play().catch(()=>{v.muted=true;v.play().catch(()=>{})})}else{v.pause();if(Math.abs(n-i)>3)v.currentTime=0;v.muted=true}});active=i;preloadAround(i)}
 function setupObserver(){observer?.disconnect();const cards=[...feed.querySelectorAll('.df-o-card')];if(!cards.length)return;observer=new IntersectionObserver(es=>{const best=es.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];if(best){const i=Number(best.target.dataset.i);if(i!==active)playActive(i)}},{root:feed,threshold:[.65,.85]});cards.forEach(c=>observer.observe(c))}
 async function openOwned(){open=true;root.classList.add('open');document.body.style.overflow='hidden';await loadPosts();render()}
 function closeOwned(){open=false;observer?.disconnect();root.querySelectorAll('video').forEach(v=>{v.pause();v.currentTime=0});root.classList.remove('open');document.body.style.overflow=''}
