@@ -83,11 +83,23 @@
   }
 
   async function boot() {
+    // The core owns the visible controls, menus, composer and chat UI.
+    // Start it first so feature scripts cannot hide/modify an uninitialized UI.
+    await loadLucide();
+    await loadCore();
+
+    // Enhancements are loaded after the core has attached its event handlers.
     for (const file of localScripts) {
       await loadScript(new URL(file, base).href);
     }
-    await loadLucide();
-    await loadCore();
+
+    // Repaint Lucide icons after feature scripts add buttons dynamically.
+    try {
+      window.lucide?.createIcons?.({ icons: window.lucide.icons });
+    } catch (error) {
+      console.warn("[defgodqe] Final icon refresh failed:", error);
+    }
+
     window.dispatchEvent(new CustomEvent("defgodqe:features-ready"));
   }
 
