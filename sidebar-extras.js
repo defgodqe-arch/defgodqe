@@ -6,6 +6,7 @@ window.__defgodqeSidebarExtras=true;
 
 const items=[
   ['📱','Doom Scroll','1000 Shorts','doom'],
+  ['🕹️','Multiplayer','NEON TAG • 8 players','multiplayer'],
   ['🎮','Mini Arcade','4 Games','games'],
   ['🎙️','Voice Mode','Talk to defgodqe','voice'],
   ['🌐','Web Search','Search the web','web'],
@@ -36,6 +37,7 @@ function click(id){const e=document.getElementById(id);if(e){e.click();return tr
 function toast(text){let t=document.getElementById('dfExpToast');if(!t){t=document.createElement('div');t.id='dfExpToast';document.body.appendChild(t)}t.textContent=text;t.classList.add('show');clearTimeout(window.__dfExpToast);window.__dfExpToast=setTimeout(()=>t.classList.remove('show'),1600)}
 function action(type){
  if(type==='doom')return window.defgodqeDoomScrollOpen?.();
+ if(type==='multiplayer')return window.defgodqeMultiplayer?.open?.();
  if(type==='games')return click('dfGameBtn');
  if(type==='voice')return click('voiceBtn');
  if(type==='web')return click('webBtn');
@@ -51,7 +53,7 @@ function install(){
  const box=document.createElement('div');box.id='dfSidebarExperiences';
  box.innerHTML='<div class="df-exp-label">Explore</div><div class="df-exp-grid"></div>';
  const grid=box.querySelector('.df-exp-grid');
- items.forEach((x,i)=>{const b=document.createElement('button');b.className='df-exp-btn';b.type='button';b.title=x[1]+' — '+x[2];b.innerHTML='<span class="df-exp-icon">'+x[0]+'</span><span class="df-exp-text"><b>'+x[1]+'</b><small>'+x[2]+'</small></span>'+(i<2?'<span class="df-exp-hot">NEW</span>':'');b.onclick=()=>action(x[3]);grid.appendChild(b)});
+ items.forEach((x,i)=>{const b=document.createElement('button');b.className='df-exp-btn';b.type='button';b.title=x[1]+' — '+x[2];b.innerHTML='<span class="df-exp-icon">'+x[0]+'</span><span class="df-exp-text"><b>'+x[1]+'</b><small>'+x[2]+'</small></span>'+(i<3?'<span class="df-exp-hot">NEW</span>':'');b.onclick=()=>action(x[3]);grid.appendChild(b)});
  user.before(box);return true;
 }
 if(!install()){const mo=new MutationObserver(()=>{if(install())mo.disconnect()});mo.observe(document.body,{childList:true,subtree:true})}
