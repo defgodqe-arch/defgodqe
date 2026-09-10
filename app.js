@@ -20,6 +20,7 @@ import './doom-mobile-fix.js';
 import './doom-replay.js';
 import './doom-owned.js';
 import './doom-persistence.js';
+import './doom-delete.js';
 import './doom-recommendations.js';
 import './doom-ultra.js';
 import './auth.js';
