@@ -16,10 +16,14 @@ const style=document.createElement('style');style.textContent=`
 .df-doom-card{height:100dvh;min-height:100dvh;width:100%;scroll-snap-align:start;scroll-snap-stop:always;background:#000}
 .df-doom-player{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:99991!important;background:#000;pointer-events:none!important}
 #dfDoomPlayer{display:block!important;width:100vw!important;height:100dvh!important;border:0!important;background:#000!important;pointer-events:none!important;visibility:visible!important;opacity:1!important}
+#dfDoomExit{position:fixed;top:18px;right:18px;z-index:100000;width:46px;height:46px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(15,15,20,.78);backdrop-filter:blur(12px);color:#fff;font-size:26px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.35);transition:transform .15s ease,background .15s ease}
+#dfDoomExit:hover{transform:scale(1.08);background:rgba(40,40,48,.9)}
+#dfDoomExit:active{transform:scale(.95)}
 `;
 document.head.appendChild(style);
-const overlay=document.createElement('div');overlay.id='dfDoomOverlay';overlay.innerHTML='<div id="dfDoomFeed"></div>';document.body.appendChild(overlay);
+const overlay=document.createElement('div');overlay.id='dfDoomOverlay';overlay.innerHTML='<div id="dfDoomFeed"></div><button id="dfDoomExit" type="button" aria-label="Exit video feed" title="Exit">×</button>';document.body.appendChild(overlay);
 const feed=overlay.querySelector('#dfDoomFeed');
+const exitBtn=overlay.querySelector('#dfDoomExit');
 for(let i=0;i<VIDEO_COUNT;i++){const c=document.createElement('section');c.className='df-doom-card';c.dataset.index=i;feed.appendChild(c)}
 const playerWrap=document.createElement('div');playerWrap.className='df-doom-player';playerWrap.innerHTML='<div id="dfDoomPlayer"></div>';overlay.appendChild(playerWrap);
 let ytPlayer=null,ytReady=false,activeIndex=-1,isOpen=false,playToken=0;
@@ -33,6 +37,7 @@ function goToVideo(direction){if(!isOpen)return;const next=Math.max(0,Math.min(V
 function open(){isOpen=true;order=shuffle(slots.slice());activeIndex=0;playToken++;overlay.classList.add('df-open');document.body.style.overflow='hidden';feed.scrollTop=0;ensureYouTube();if(ytReady)loadActive(true)}
 function close(){isOpen=false;playToken++;if(ytReady&&ytPlayer)try{ytPlayer.stopVideo()}catch(_){}overlay.classList.remove('df-open');document.body.style.overflow=''}
 window.defgodqeDoomScrollOpen=open;window.defgodqeDoomScrollClose=close;
+exitBtn.addEventListener('click',close);
 let scrollRaf=0;feed.addEventListener('scroll',()=>{if(scrollRaf)return;scrollRaf=requestAnimationFrame(()=>{scrollRaf=0;if(!isOpen)return;const i=Math.max(0,Math.min(VIDEO_COUNT-1,Math.round(feed.scrollTop/Math.max(1,innerHeight))));if(i!==activeIndex)playAt(i)})},{passive:true});
 
 /* Mouse-wheel video switching: one wheel movement = one short. */
