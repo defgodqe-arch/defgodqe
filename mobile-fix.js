@@ -41,7 +41,6 @@
   #attachBtn,#imgBtn,#stopBtn,#sendBtn{flex-basis:38px!important;width:38px!important;min-width:38px!important;max-width:38px!important;height:38px!important;}
 }
 @media (max-width:360px){
-  #webBtn{display:none!important;}
   #modelLabel{font-size:11px!important;}
 }
 `;
