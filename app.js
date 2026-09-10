@@ -1,9 +1,9 @@
-/* defgodqe — browser-side feature loader */
+/* defgodqe — stable browser bootstrap */
 (function () {
   "use strict";
 
-  if (window.__defgodqeFeatureLoaderStarted) return;
-  window.__defgodqeFeatureLoaderStarted = true;
+  if (window.__defgodqeBootstrapStarted) return;
+  window.__defgodqeBootstrapStarted = true;
 
   const localScripts = [
     "space-fix.js",
@@ -45,36 +45,54 @@
     "direct-messages.js"
   ];
 
-  // Use the live main branch. The previous pinned SHA no longer exists.
-  const remoteCore =
-    "https://cdn.jsdelivr.net/gh/defgodqe-arch/defgodqe-ai@main/app.js";
+  const base = new URL("./", window.location.href);
 
-  function loadScript(src, module) {
+  function loadScript(src) {
     return new Promise((resolve) => {
       const script = document.createElement("script");
       script.src = src;
       script.async = false;
-      if (module) script.type = "module";
-      script.onload = () => resolve();
+      script.onload = resolve;
       script.onerror = () => {
-        console.warn("[defgodqe] Feature failed to load:", src);
+        console.warn("[defgodqe] Optional script failed:", src);
         resolve();
       };
       document.head.appendChild(script);
     });
   }
 
+  async function loadLucide() {
+    if (window.lucide?.createIcons) return true;
+    await loadScript("https://unpkg.com/lucide@latest/dist/umd/lucide.js");
+    return Boolean(window.lucide?.createIcons);
+  }
+
+  async function loadCore() {
+    const response = await fetch(new URL("app-core.js", base).href, { cache: "no-store" });
+    if (!response.ok) throw new Error(`app-core.js returned HTTP ${response.status}`);
+
+    let source = await response.text();
+    source = source.replace(/^\s*import\s+\{\s*createIcons\s*,\s*icons\s*\}\s+from\s+['"][^'"]+['"]\s*;?\s*/m, "");
+
+    const createIcons = window.lucide?.createIcons;
+    const icons = window.lucide?.icons;
+    if (typeof createIcons !== "function") throw new Error("Lucide failed to initialize");
+
+    const run = new Function("createIcons", "icons", source);
+    run(createIcons, icons);
+  }
+
   async function boot() {
-    const base = new URL("./", window.location.href);
     for (const file of localScripts) {
-      await loadScript(new URL(file, base).href, false);
+      await loadScript(new URL(file, base).href);
     }
-    await loadScript(remoteCore, true);
+    await loadLucide();
+    await loadCore();
     window.dispatchEvent(new CustomEvent("defgodqe:features-ready"));
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot, { once: true });
+    document.addEventListener("DOMContentLoaded", () => void boot(), { once: true });
   } else {
     void boot();
   }
