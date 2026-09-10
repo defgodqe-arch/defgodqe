@@ -18,7 +18,7 @@ import './doom-scroll.js';
 import './youtube-random-feed.js';
 import './doom-social.js';
 import './doom-social-entry.js';
-import './sidebar-extras.js';
+import './sidebar-extras.js?v=neon-tag-fix-2';
 import './doom-mobile-fix.js';
 import './doom-replay.js';
 import './doom-owned.js';
