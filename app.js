@@ -36,3 +36,4 @@ import './web-search-fix.js';
 import './direct-messages.js';
 import './ui-theme.js';
 import './old-look-shell.js';
+import './qwen-tts-local.js';
