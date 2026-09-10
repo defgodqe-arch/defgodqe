@@ -34,7 +34,7 @@ function getPosts(){
   return [...new Set([...TIKTOK_POSTS,...injected].map(cleanId).filter(Boolean))];
 }
 function playerUrl(id,autoplay=false){
-  return 'https://www.tiktok.com/player/v1/'+encodeURIComponent(id)+'?autoplay='+(autoplay?'1':'0')+'&loop=1&controls=1&description=1&music_info=1&rel=1';
+  return 'https://www.tiktok.com/player/v1/'+encodeURIComponent(id)+'?autoplay='+(autoplay?'1':'0')+'&loop=1&controls=1&volume_control=1&description=1&music_info=1&rel=1';
 }
 function postMessage(iframe,type,value){
   try{iframe.contentWindow?.postMessage({type,value,'x-tiktok-player':true},'*');}catch{}
@@ -73,6 +73,18 @@ function muteAll(exceptIndex=-1){
 function pauseAll(exceptIndex=-1){
   getIframes().forEach(frame=>{const i=Number(frame.dataset.index);if(i!==exceptIndex)postMessage(frame,'pause');});
 }
+function requestFullSound(frame){
+  if(!frame)return;
+  /* TikTok's official Embed Player exposes unMute, but not a host-side setVolume command. */
+  postMessage(frame,'unMute');
+  postMessage(frame,'play');
+  /* Retry after the player has initialized so the sound request is not lost during iframe startup. */
+  [120,400,900].forEach(delay=>setTimeout(()=>{
+    if(isOpen && frame===feed.querySelector('iframe[data-index="'+activeIndex+'"]')){
+      postMessage(frame,'unMute');
+    }
+  },delay));
+}
 function playOnly(index){
   if(!isOpen)return;
   setActiveCard(index);
@@ -83,9 +95,7 @@ function playOnly(index){
   const id=frame.dataset.tiktokId;
   const desired=playerUrl(id,true);
   if(frame.src!==desired)frame.src=desired;
-  /* Sound belongs exclusively to the video currently being watched. */
-  postMessage(frame,'unMute');
-  postMessage(frame,'play');
+  requestFullSound(frame);
 }
 function stopAll(){
   getIframes().forEach(frame=>{postMessage(frame,'pause');postMessage(frame,'mute');});
@@ -122,6 +132,11 @@ feed.addEventListener('scroll',()=>{
     playOnly(activeIndex);
   },80);
 },{passive:true});
+
+/* Any direct interaction inside Doom Scroll is also used to re-request sound. */
+['pointerdown','touchstart','click','keydown'].forEach(eventName=>{
+  overlay.addEventListener(eventName,()=>{if(isOpen)requestFullSound(feed.querySelector('iframe[data-index="'+activeIndex+'"]'));},{passive:true});
+});
 
 let wheelLocked=false;
 feed.addEventListener('wheel',e=>{if(!isOpen)return;e.preventDefault();if(wheelLocked)return;wheelLocked=true;go(e.deltaY>0?1:-1);setTimeout(()=>wheelLocked=false,280);},{passive:false});
