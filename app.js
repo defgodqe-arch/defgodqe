@@ -1,4 +1,4 @@
-/* defgodqe — restored working core + futuristic visual layer */
+/* defgodqe — restored working core + modern visual layer */
 import './space-fix.js';
 import './audio-fix.js';
 import './social-platform.js';
@@ -34,3 +34,4 @@ import './defgodqe-mega.js';
 import './realism-layer.js';
 import './web-search-fix.js';
 import './direct-messages.js';
+import './ui-theme.js';
