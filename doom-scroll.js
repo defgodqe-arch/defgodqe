@@ -14,7 +14,8 @@ const style=document.createElement('style');style.textContent=`
 #dfDoomFeed{position:absolute;inset:0;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}#dfDoomFeed::-webkit-scrollbar{display:none}
 .df-doom-card{height:100dvh;scroll-snap-align:start;background:#000;display:flex;align-items:center;justify-content:center;position:relative}
 .df-doom-player{width:min(100vw,56.25dvh);height:min(100dvh,177.7778vw);aspect-ratio:9/16;background:#000;position:relative}
-.df-doom-player iframe{width:100%;height:100%;border:0;background:#000}
+.df-doom-player iframe{width:100%;height:100%;border:0;background:#000;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .12s ease}
+.df-doom-card.df-active .df-doom-player iframe{visibility:visible;opacity:1;pointer-events:auto}
 .df-doom-empty{color:#fff;font:600 16px system-ui;text-align:center;padding:28px}.df-doom-empty small{display:block;color:#aaa;margin-top:10px;font-weight:400}
 #dfDoomExit{position:fixed;top:18px;right:18px;z-index:100001;width:46px;height:46px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(15,15,20,.82);color:#fff;font-size:26px;cursor:pointer}
 `;document.head.appendChild(style);
@@ -35,7 +36,9 @@ function getPosts(){
 function playerUrl(id,autoplay=false){
   return 'https://www.tiktok.com/player/v1/'+encodeURIComponent(id)+'?autoplay='+(autoplay?'1':'0')+'&loop=1&controls=1&description=1&music_info=1&rel=1';
 }
-function postMessage(iframe,message){try{iframe.contentWindow?.postMessage(message,'*');}catch{}}
+function postMessage(iframe,type,value){
+  try{iframe.contentWindow?.postMessage({type,value,'x-tiktok-player':true},'*');}catch{}
+}
 
 function render(){
   feed.innerHTML='';
@@ -59,21 +62,35 @@ function render(){
 }
 
 function getIframes(){return [...feed.querySelectorAll('iframe[data-index]')];}
+function setActiveCard(index){
+  feed.querySelectorAll('.df-doom-card.df-active').forEach(card=>card.classList.remove('df-active'));
+  const card=feed.querySelector('.df-doom-card[data-index="'+index+'"]');
+  if(card)card.classList.add('df-active');
+}
+function muteAll(exceptIndex=-1){
+  getIframes().forEach(frame=>{const i=Number(frame.dataset.index);if(i!==exceptIndex)postMessage(frame,'mute');});
+}
 function pauseAll(exceptIndex=-1){
-  getIframes().forEach(frame=>{const i=Number(frame.dataset.index);if(i!==exceptIndex)postMessage(frame,{type:'pause'});});
+  getIframes().forEach(frame=>{const i=Number(frame.dataset.index);if(i!==exceptIndex)postMessage(frame,'pause');});
 }
 function playOnly(index){
   if(!isOpen)return;
+  setActiveCard(index);
   pauseAll(index);
+  muteAll(index);
   const frame=feed.querySelector('iframe[data-index="'+index+'"]');
   if(!frame)return;
-  /* Load the active player with autoplay enabled, then explicitly play it. */
   const id=frame.dataset.tiktokId;
   const desired=playerUrl(id,true);
   if(frame.src!==desired)frame.src=desired;
-  postMessage(frame,{type:'play'});
+  /* Sound belongs exclusively to the video currently being watched. */
+  postMessage(frame,'unMute');
+  postMessage(frame,'play');
 }
-function stopAll(){pauseAll(-1);getIframes().forEach(frame=>postMessage(frame,{type:'mute'}));}
+function stopAll(){
+  getIframes().forEach(frame=>{postMessage(frame,'pause');postMessage(frame,'mute');});
+  feed.querySelectorAll('.df-doom-card.df-active').forEach(card=>card.classList.remove('df-active'));
+}
 
 window.defgodqeDoomAddTikTok=function(value){
   const id=cleanId(value);if(!id)return false;
@@ -101,7 +118,8 @@ feed.addEventListener('scroll',()=>{
   clearTimeout(scrollTimer);
   scrollTimer=setTimeout(()=>{
     const next=getIndex();
-    if(next!==activeIndex){activeIndex=next;playOnly(activeIndex);}else playOnly(activeIndex);
+    if(next!==activeIndex)activeIndex=next;
+    playOnly(activeIndex);
   },80);
 },{passive:true});
 
@@ -109,7 +127,6 @@ let wheelLocked=false;
 feed.addEventListener('wheel',e=>{if(!isOpen)return;e.preventDefault();if(wheelLocked)return;wheelLocked=true;go(e.deltaY>0?1:-1);setTimeout(()=>wheelLocked=false,280);},{passive:false});
 document.addEventListener('keydown',e=>{if(!isOpen)return;if(e.key==='Escape')close();if(e.key==='ArrowDown'){e.preventDefault();go(1);}if(e.key==='ArrowUp'){e.preventDefault();go(-1);}});
 
-/* Enforce one active player and stop playback whenever Doom Scroll is left. */
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAll();else if(isOpen)playOnly(activeIndex);});
 
 function addSidebarButton(){
