@@ -11,6 +11,7 @@ import './mobile-app-fix.js';
 import './pwa.js';
 import './futuristic.js';
 import './mini-game.js';
+import './mini-game-neon-tag.js';
 import './game-sounds.js';
 import './cool-stuff.js';
 import './feature-pack.js';
