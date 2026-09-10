@@ -20,78 +20,6 @@ body {
 }
 
 /* ============================================================
-   BUTTON VISIBILITY SAFETY NET
-   Keep the core application controls visible even if an optional
-   feature script fails or a utility stylesheet loads late.
-   ============================================================ */
-
-#sidebar,
-#openSidebar,
-#closeSidebar,
-#newChatBtn,
-#signBtn,
-#modelBtn,
-#modeBtn,
-#webBtn,
-#voiceBtn,
-#attachBtn,
-#imgBtn,
-#sendBtn,
-#stopBtn {
-  visibility: visible;
-}
-
-#openSidebar,
-#newChatBtn,
-#signBtn,
-#modelBtn,
-#modeBtn,
-#webBtn,
-#voiceBtn,
-#attachBtn,
-#imgBtn,
-#sendBtn {
-  opacity: 1;
-}
-
-#openSidebar,
-#newChatBtn,
-#signBtn,
-#modelBtn,
-#modeBtn,
-#webBtn,
-#voiceBtn,
-#attachBtn,
-#imgBtn,
-#sendBtn {
-  cursor: pointer;
-}
-
-#openSidebar svg,
-#openSidebar i,
-#newChatBtn svg,
-#newChatBtn i,
-#signBtn svg,
-#signBtn i,
-#modelBtn svg,
-#modelBtn i,
-#modeBtn svg,
-#modeBtn i,
-#webBtn svg,
-#webBtn i,
-#voiceBtn svg,
-#voiceBtn i,
-#attachBtn svg,
-#attachBtn i,
-#imgBtn svg,
-#imgBtn i,
-#sendBtn svg,
-#sendBtn i {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* ============================================================
    SCROLLBARS
    ============================================================ */
 
@@ -112,6 +40,8 @@ body {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Firefox */
 
 * {
   scrollbar-width: thin;
@@ -138,6 +68,8 @@ body {
   }
 }
 
+/* Prevent mobile page movement */
+
 @media (max-width: 1023px) {
   body {
     overscroll-behavior: none;
@@ -146,7 +78,8 @@ body {
 
 /* ============================================================
    WELCOME ORB
-   ============================================================ */
+   ============================================================
+   */
 
 .orb {
   position: relative;
@@ -154,6 +87,7 @@ body {
   height: 84px;
   flex-shrink: 0;
   border-radius: 9999px;
+
   background:
     radial-gradient(
       circle at 34% 30%,
@@ -163,10 +97,12 @@ body {
       #eab308 82%,
       #ca8a04 100%
     );
+
   box-shadow:
     0 0 46px 8px rgba(250, 204, 21, 0.4),
     inset -8px -8px 22px rgba(202, 138, 4, 0.55),
     inset 8px 8px 18px rgba(255, 251, 230, 0.5);
+
   animation: bob 4s ease-in-out infinite;
 }
 
@@ -175,12 +111,14 @@ body {
   position: absolute;
   inset: 15%;
   border-radius: 9999px;
+
   background:
     radial-gradient(
       circle at 35% 30%,
       rgba(255, 255, 255, 0.65),
       transparent 38%
     );
+
   pointer-events: none;
 }
 
@@ -188,6 +126,7 @@ body {
   position: absolute;
   inset: 8%;
   border-radius: 9999px;
+
   background:
     conic-gradient(
       from 0deg,
@@ -197,18 +136,26 @@ body {
       rgba(255, 255, 255, 0.25) 75%,
       transparent
     );
+
   mix-blend-mode: screen;
   animation: spin 6s linear infinite;
 }
 
 @keyframes bob {
   0%,
-  100% { transform: translateY(0); }
-  50% { transform: translateY(-9px); }
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-9px);
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ============================================================
@@ -227,27 +174,54 @@ body {
   height: 7px;
   margin-right: 4px;
   border-radius: 9999px;
+
   background: #facc15;
-  animation: blink 1.2s infinite both;
+
+  animation:
+    blink 1.2s infinite both;
 }
 
-.typing span:nth-child(2) { animation-delay: 0.2s; }
-.typing span:nth-child(3) { animation-delay: 0.4s; }
+.typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes blink {
-  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
-  40% { opacity: 1; transform: translateY(-3px); }
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
 }
 
 /* ============================================================
    MESSAGE ANIMATION
-   ============================================================ */
+   ============================================================
+   */
 
-.msg-in { animation: fade 0.3s ease; }
+.msg-in {
+  animation: fade 0.3s ease;
+}
 
 @keyframes fade {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ============================================================
@@ -258,12 +232,18 @@ body {
   font-size: 15px;
   line-height: 1.7;
   color: #dbe1ea;
+
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
-.prose-df p { margin: 0 0 0.85em; }
-.prose-df p:last-child { margin-bottom: 0; }
+.prose-df p {
+  margin: 0 0 0.85em;
+}
+
+.prose-df p:last-child {
+  margin-bottom: 0;
+}
 
 .prose-df h1,
 .prose-df h2,
@@ -322,7 +302,11 @@ body {
   text-align: left;
 }
 
-.prose-df th { background: #151b26; color: #fff; font-weight: 600; }
+.prose-df th {
+  background: #151b26;
+  color: #fff;
+  font-weight: 600;
+}
 
 .prose-df code:not(pre code) {
   background: #1a2230;
@@ -352,9 +336,12 @@ body {
 .codeblock {
   position: relative;
   margin: 0.9em 0;
+
   border: 1px solid #1e2635;
   border-radius: 12px;
+
   overflow: hidden;
+
   background: #0d1420;
 }
 
@@ -362,17 +349,33 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   gap: 10px;
+
   padding: 0.4em 0.8em;
+
   background: #111827;
   border-bottom: 1px solid #1e2635;
+
   font-size: 12px;
   color: #8a97a8;
+
   font-family: "JetBrains Mono", monospace;
 }
 
-.codeblock pre { margin: 0; padding: 1em; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.codeblock code { font-family: "JetBrains Mono", monospace; font-size: 13px; line-height: 1.6; }
+.codeblock pre {
+  margin: 0;
+  padding: 1em;
+
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.codeblock code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
 
 /* ============================================================
    COPY BUTTON
@@ -382,36 +385,64 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
+
   padding: 0.25em 0.6em;
+
   border-radius: 7px;
+
   background: transparent;
   color: #8a97a8;
+
   font-size: 11px;
+
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
-.copy-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
 .copy-btn:active { transform: scale(0.96); }
 
 /* ============================================================
    MESSAGE ACTION BUTTONS
    ============================================================ */
 
-.msg-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
+.msg-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+}
 
 .msg-actions button {
   display: flex;
   align-items: center;
   gap: 4px;
+
   padding: 0.3em 0.55em;
+
   border-radius: 8px;
+
   color: #7c8798;
+
   font-size: 12px;
-  transition: background 0.15s ease, color 0.15s ease;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
-.msg-actions button:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+.msg-actions button:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
 .msg-actions button:active { transform: scale(0.97); }
 
 /* ============================================================
@@ -420,21 +451,305 @@ body {
 
 .gen-img {
   display: block;
+
   border-radius: 14px;
   border: 1px solid #1e2635;
+
   max-width: 100%;
   height: auto;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  box-shadow:
+    0 10px 35px rgba(0, 0, 0, 0.25);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .gen-img:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.32);
+
+  box-shadow:
+    0 14px 42px rgba(0, 0, 0, 0.35);
 }
 
-/* Keep the safety net at the end so later feature CSS cannot accidentally
-   make the primary controls invisible. */
+/* ============================================================
+   ATTACHMENTS
+   ============================================================ */
+
+.attachment-card {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.attachment-card img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 10px;
+}
+
+/* ============================================================
+   WEB SEARCH SOURCES
+   ============================================================ */
+
+.web-sources {
+  margin-top: 16px;
+  width: 100%;
+}
+
+.web-sources-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.web-sources-title svg { color: #facc15; }
+
+.web-sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.web-source {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #cbd5e1;
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.web-source:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(250, 204, 21, 0.3);
+  transform: translateY(-1px);
+}
+
+.web-source-icon { flex: 0 0 auto; color: #facc15; }
+.web-source-content { min-width: 0; flex: 1; }
+
+.web-source-title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.web-source-domain {
+  display: block;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #64748b;
+  font-size: 10px;
+}
+
+.web-source-external { flex: 0 0 auto; color: #64748b; }
+.web-source:hover .web-source-external { color: #facc15; }
+
+/* ============================================================
+   IMAGE MODE
+   ============================================================ */
+
+#imgHint { transition: opacity 0.2s ease; }
+
+/* ============================================================
+   WEB BUTTON ACTIVE STATE
+   ============================================================ */
+
+#webBtn.web-active {
+  border-color: rgba(250, 204, 21, 0.45);
+  background: rgba(250, 204, 21, 0.1);
+  color: #facc15;
+}
+
+#webBtn.web-active:hover { background: rgba(250, 204, 21, 0.17); }
+
+/* ============================================================
+   IMAGE BUTTON ACTIVE STATE
+   ============================================================ */
+
+#imgBtn.img-active {
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.1);
+}
+
+#imgBtn.img-active:hover { background: rgba(250, 204, 21, 0.17); }
+
+/* ============================================================
+   COMPOSER
+   ============================================================ */
+
+#composer { min-height: 54px; }
+#input { overflow-y: auto; line-height: 1.5; }
+#input::selection { background: rgba(250, 204, 21, 0.25); }
+
+/* ============================================================
+   STOP BUTTON
+   ============================================================ */
+
+#stopBtn {
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+#stopBtn:active { transform: scale(0.95); }
+
+/* ============================================================
+   VOICE MODE
+   ============================================================ */
+
+#voiceOverlay.show { display: flex; }
+
+#vCanvas {
+  filter: drop-shadow(0 0 30px rgba(250, 180, 60, 0.25));
+}
+
+#vStage {
+  max-width: 90vw;
+  max-height: 90vw;
+}
+
+#vCaption { overflow-wrap: anywhere; }
+
+#vMic {
+  box-shadow: 0 0 35px rgba(250, 204, 21, 0.2);
+}
+
+#vMic:hover { box-shadow: 0 0 45px rgba(250, 204, 21, 0.32); }
+#vMic:active { transform: scale(0.95); }
+
+#vHands.active,
+#vMute.active {
+  border-color: rgba(250, 204, 21, 0.4);
+  background: rgba(250, 204, 21, 0.1);
+  color: #facc15;
+}
+
+/* ============================================================
+   MOBILE VOICE
+   ============================================================ */
+
+@media (max-width: 640px) {
+  #vStage {
+    width: 280px !important;
+    height: 280px !important;
+  }
+
+  #vCanvas {
+    width: 280px;
+    height: 280px;
+  }
+
+  #voiceOverlay .flex.w-full.items-center.justify-between {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  #voiceOverlay select { max-width: 8.5rem; }
+  #voiceOverlay .gap-5 { gap: 12px; }
+}
+
+/* ============================================================
+   MOBILE CHAT
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .prose-df { font-size: 14px; }
+  .codeblock code { font-size: 12px; }
+  .codeblock-head { font-size: 11px; }
+  .web-source { padding: 8px 9px; }
+  .web-source-title { font-size: 11px; }
+}
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+button,
+a,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(250, 204, 21, 0.65);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================
+   LOADING STATE
+   ============================================================ */
+
+.loading-pulse { animation: loadingPulse 1.5s ease-in-out infinite; }
+
+@keyframes loadingPulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+/* ============================================================
+   ERROR MESSAGE
+   ============================================================ */
+
+.df-error {
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  background: rgba(127, 29, 29, 0.12);
+  color: #fecaca;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+/* ============================================================
+   HIDDEN UTILITY
+   ============================================================ */
+
+.hidden-force { display: none !important; }
+
+/* ============================================================
+   PRIMARY CONTROL VISIBILITY SAFETY NET
+   ============================================================ */
+
 #openSidebar,
 #newChatBtn,
 #signBtn,
@@ -446,4 +761,29 @@ body {
 #imgBtn,
 #sendBtn {
   visibility: visible !important;
+  opacity: 1 !important;
+}
+
+#openSidebar i,
+#newChatBtn i,
+#signBtn i,
+#modelBtn i,
+#modeBtn i,
+#webBtn i,
+#voiceBtn i,
+#attachBtn i,
+#imgBtn i,
+#sendBtn i,
+#openSidebar svg,
+#newChatBtn svg,
+#signBtn svg,
+#modelBtn svg,
+#modeBtn svg,
+#webBtn svg,
+#voiceBtn svg,
+#attachBtn svg,
+#imgBtn svg,
+#sendBtn svg {
+  visibility: visible !important;
+  opacity: 1 !important;
 }
