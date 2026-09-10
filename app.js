@@ -5,7 +5,13 @@
   if (window.__defgodqeBootstrapStarted) return;
   window.__defgodqeBootstrapStarted = true;
 
+  /*
+   * IMPORTANT: app-core.js is the owner of the base UI.
+   * Optional features must never run before the core is initialized.
+   */
   const localScripts = [
+    "opening-animation.js",
+    "features.js",
     "space-fix.js",
     "audio-fix.js",
     "social-platform.js",
@@ -42,7 +48,8 @@
     "defgodqe-mega.js",
     "realism-layer.js",
     "web-search-fix.js",
-    "direct-messages.js"
+    "direct-messages.js",
+    "voice-upgrade.js"
   ];
 
   const base = new URL("./", window.location.href);
@@ -82,24 +89,45 @@
     run(createIcons, icons);
   }
 
-  async function boot() {
-    // The core owns the visible controls, menus, composer and chat UI.
-    // Start it first so feature scripts cannot hide/modify an uninitialized UI.
-    await loadLucide();
-    await loadCore();
+  function rescuePrimaryControls() {
+    const ids = [
+      "openSidebar", "newChatBtn", "signBtn", "modelBtn", "modeBtn",
+      "webBtn", "voiceBtn", "attachBtn", "imgBtn", "sendBtn"
+    ];
 
-    // Enhancements are loaded after the core has attached its event handlers.
-    for (const file of localScripts) {
-      await loadScript(new URL(file, base).href);
+    for (const id of ids) {
+      const node = document.getElementById(id);
+      if (!node) continue;
+      node.style.setProperty("visibility", "visible", "important");
+      node.style.setProperty("opacity", "1", "important");
     }
 
-    // Repaint Lucide icons after feature scripts add buttons dynamically.
     try {
       window.lucide?.createIcons?.({ icons: window.lucide.icons });
+    } catch (_) {}
+  }
+
+  async function boot() {
+    try {
+      await loadLucide();
+      await loadCore();
     } catch (error) {
-      console.warn("[defgodqe] Final icon refresh failed:", error);
+      console.error("[defgodqe] Core boot failed:", error);
+      rescuePrimaryControls();
+      return;
     }
 
+    /* Core is ready. Optional features are isolated so one broken feature
+       cannot break the base AI application. */
+    for (const file of localScripts) {
+      try {
+        await loadScript(new URL(file, base).href);
+      } catch (error) {
+        console.warn("[defgodqe] Feature skipped:", file, error);
+      }
+    }
+
+    rescuePrimaryControls();
     window.dispatchEvent(new CustomEvent("defgodqe:features-ready"));
   }
 
