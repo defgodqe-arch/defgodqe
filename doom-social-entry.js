@@ -3,63 +3,37 @@
   'use strict';
   if(window.__defgodqeSocialEntry)return;
   window.__defgodqeSocialEntry=true;
-
-  const STYLE_ID='dfDoomSocialEntryStyle';
-  const BUTTON_ID='dfDoomSocialHome';
-
+  const STYLE_ID='dfDoomSocialEntryStyle',BUTTON_ID='dfDoomSocialHome';
+  function openSocialHome(){
+    const social=document.getElementById('dfSocial');
+    if(!social){alert('Social Home is still loading. Try again in a moment.');return;}
+    const home=social.querySelector('.df-s-tab[data-page="home"]');
+    if(home)home.click();
+    social.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
   function addButton(){
     const overlay=document.getElementById('dfDoomOverlay');
-    if(!overlay || document.getElementById(BUTTON_ID)) return !!overlay;
-
+    if(!overlay)return false;
     if(!document.getElementById(STYLE_ID)){
-      const style=document.createElement('style');
-      style.id=STYLE_ID;
-      style.textContent=`
-        #${BUTTON_ID}{
-          position:fixed;top:18px;left:18px;z-index:100001;
-          height:46px;padding:0 16px;border:1px solid rgba(255,255,255,.22);
-          border-radius:24px;background:rgba(15,15,20,.78);backdrop-filter:blur(14px);
-          color:#fff;font:700 14px Inter,system-ui,sans-serif;cursor:pointer;
-          display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.35);
-          transition:transform .15s ease,background .15s ease;
-        }
-        #${BUTTON_ID}:hover{transform:translateY(-1px) scale(1.03);background:rgba(40,40,48,.92)}
-        #${BUTTON_ID}:active{transform:scale(.97)}
-        @media(max-width:600px){#${BUTTON_ID}{top:12px;left:12px;height:42px;padding:0 13px;font-size:13px}}
-      `;
-      document.head.appendChild(style);
+      const style=document.createElement('style');style.id=STYLE_ID;style.textContent=`
+        #${BUTTON_ID}{position:fixed!important;top:18px!important;left:18px!important;z-index:2147483646!important;height:48px!important;min-width:142px!important;padding:0 17px!important;border:1px solid rgba(255,255,255,.28)!important;border-radius:999px!important;background:rgba(12,12,18,.92)!important;backdrop-filter:blur(16px)!important;color:#fff!important;font:800 14px Inter,system-ui,sans-serif!important;cursor:pointer!important;align-items:center!important;justify-content:center!important;gap:8px!important;box-shadow:0 6px 28px rgba(0,0,0,.5)!important;pointer-events:auto!important;visibility:visible!important;opacity:1!important}
+        #${BUTTON_ID}:hover{transform:scale(1.04);background:rgba(35,35,45,.98)!important}#${BUTTON_ID}:active{transform:scale(.97)}
+        @media(max-width:600px){#${BUTTON_ID}{top:12px!important;left:12px!important;height:44px!important;min-width:130px!important;font-size:13px!important}}
+      `;document.head.appendChild(style);
     }
-
-    const btn=document.createElement('button');
-    btn.id=BUTTON_ID;
-    btn.type='button';
-    btn.setAttribute('aria-label','Open defgodqe social home');
-    btn.innerHTML='<span style="font-size:17px">⌂</span><span>Social Home</span>';
-    btn.addEventListener('click',function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      const social=document.getElementById('dfSocial');
-      if(!social){
-        alert('Social Home is still loading. Try again in a moment.');
-        return;
-      }
-      const home=social.querySelector('.df-s-tab[data-page="home"]');
-      if(home) home.click();
-      social.classList.add('open');
-      document.body.style.overflow='hidden';
-    });
-    overlay.appendChild(btn);
+    let btn=document.getElementById(BUTTON_ID);
+    if(!btn){
+      btn=document.createElement('button');btn.id=BUTTON_ID;btn.type='button';btn.setAttribute('aria-label','Open defgodqe social home');btn.innerHTML='<span style="font-size:19px">⌂</span><span>Social Home</span>';
+      btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openSocialHome()});
+      document.body.appendChild(btn);
+    }
+    btn.style.display=overlay.classList.contains('df-open')?'flex':'none';
     return true;
   }
-
   function watch(){
-    if(addButton()) return;
-    const mo=new MutationObserver(function(){
-      if(addButton()) mo.disconnect();
-    });
-    mo.observe(document.body,{childList:true,subtree:true});
+    addButton();
+    new MutationObserver(addButton).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
   }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',watch,{once:true});
-  else watch();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch,{once:true});else watch();
 })();
