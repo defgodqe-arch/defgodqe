@@ -25,7 +25,7 @@ import './doom-persistence.js';
 import './doom-delete.js';
 import './doom-recommendations.js';
 import './doom-ultra.js';
+import './doom-1000.js';
 import './auth.js';
 import './mini-games-ultimate.js';
 import './app-boost.js';
-import './space-fix.js';
