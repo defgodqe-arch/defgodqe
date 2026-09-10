@@ -10,4 +10,5 @@ import './futuristic.js';
 import './mini-game.js';
 import './game-sounds.js';
 import './cool-stuff.js';
+import './feature-pack.js';
 import './doom-scroll.js';
