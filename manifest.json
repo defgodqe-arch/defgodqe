@@ -1,6 +1,6 @@
 {
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "browser"],
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "any",
   "id": "./",
   "name": "defgodqe — Your AI. Your Ideas. Your World.",
@@ -10,11 +10,20 @@
   "scope": "./",
   "background_color": "#0a0d14",
   "theme_color": "#facc15",
-  "icons": [{
-    "src": "icons/icon.svg",
-    "sizes": "any",
-    "type": "image/svg+xml",
-    "purpose": "any"
-  }],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
   "generator": "defgodqe"
 }
