@@ -19,6 +19,7 @@ import './youtube-random-feed.js';
 import './doom-social.js';
 import './doom-social-entry.js';
 import './sidebar-extras.js';
+import './sidebar-games.js';
 import './doom-mobile-fix.js';
 import './doom-replay.js';
 import './doom-owned.js';
