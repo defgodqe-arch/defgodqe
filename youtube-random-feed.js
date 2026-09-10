@@ -19,17 +19,19 @@ const TOPICS=[
   'diy shorts','craft shorts','retro gaming','pokemon shorts','fortnite shorts','roblox shorts'
 ];
 
-/* Creator feeds requested for the Doom Scroll. Their actual uploads are
- * discovered through the official YouTube API when configured. */
+/* Creator feeds requested for the Doom Scroll. Actual uploads are discovered
+ * through the official YouTube API when configured. */
 const CREATOR_CHANNELS=[
   {handle:'SypherPK',name:'SypherPK',topics:['fortnite','gaming','gaming shorts']},
-  {handle:'Mappelz',name:'Mappelz',topics:['gaming','gaming shorts']}
+  {handle:'Mappelz',name:'Mappelz',topics:['gaming','gaming shorts']},
+  {handle:'hxsain',name:'hxsain',topics:['gaming','gaming shorts','minecraft','funny shorts']},
+  {handle:'HisYTStory',name:'HisYTStory',topics:['storytelling','history','interesting facts','shorts']}
 ];
 
-/* Public SypherPK Shorts found during feed setup. More are fetched dynamically. */
 const SEEDED_VIDEOS=[
   {id:'KLJu0lnoftE',title:'The #1 Most Satisfying Fortnite Short',creator:'SypherPK',topics:['fortnite','gaming','gaming shorts']},
-  {id:'7gCytVbT714',title:'Worlds Most Satisfying Fortnite Short',creator:'SypherPK',topics:['fortnite','gaming','gaming shorts']}
+  {id:'7gCytVbT714',title:'Worlds Most Satisfying Fortnite Short',creator:'SypherPK',topics:['fortnite','gaming','gaming shorts']},
+  {id:'xF2LLLwpChI',title:'Best of Hxsain Shorts 2023',creator:'hxsain',topics:['gaming','gaming shorts','funny shorts']}
 ];
 
 const MAX=1000;
@@ -78,11 +80,10 @@ window.defgodqeFetchYouTubeRandom1000=async function(){
     else return null;
     try{const r=await fetch(url);return r.ok?await r.json():null}catch{return null}
   }
-  /* First prioritize the two requested creators. */
+  /* First prioritize the requested creators. */
   for(const creator of CREATOR_CHANNELS){
     if(results.length>=MAX)break;
-    let data=await request({q:creator.handle+' shorts',maxResults:'50',type:'video',videoDuration:'short',channelHandle:creator.handle});
-    if(!data&&apiKey)continue;
+    const data=await request({q:creator.handle+' shorts',maxResults:'50',type:'video',videoDuration:'short',channelHandle:creator.handle});
     for(const item of (data?.items||[])){
       const v=normalize({id:item.id?.videoId||item.videoId,title:item.snippet?.title,creator:item.snippet?.channelTitle||creator.name,description:item.snippet?.description,topics:creator.topics});
       if(v&&!seen.has(v.id)){seen.add(v.id);results.push(v);if(results.length>=MAX)break}
