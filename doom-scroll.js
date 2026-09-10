@@ -4,7 +4,22 @@
 if(window.__defgodqeDoomScroll)return;
 window.__defgodqeDoomScroll=true;
 
-const TIKTOK_POSTS=['6718335390845095173'];
+/* Publicly identified @zackdfilms92 post IDs. TikTok's official player requires a post ID per embed. */
+const TIKTOK_POSTS=[
+  '6718335390845095173',
+  '7683659215851900174',
+  '7683628373943274765',
+  '7683597056543313165',
+  '7683551424818498829',
+  '7683520382174776590',
+  '7683257298306829581',
+  '7683225992839679245',
+  '7671274347121741070',
+  '7628707580822523150',
+  '7628228477505850637',
+  '7513300055709830442',
+  '7493973327401372974'
+];
 const VIDEO_COUNT=100;
 const FALLBACK_MESSAGE='No playable TikTok videos are configured yet.';
 let activeIndex=0,isOpen=false,scrollTimer=0;
@@ -75,14 +90,10 @@ function pauseAll(exceptIndex=-1){
 }
 function requestFullSound(frame){
   if(!frame)return;
-  /* TikTok's official Embed Player exposes unMute, but not a host-side setVolume command. */
   postMessage(frame,'unMute');
   postMessage(frame,'play');
-  /* Retry after the player has initialized so the sound request is not lost during iframe startup. */
   [120,400,900].forEach(delay=>setTimeout(()=>{
-    if(isOpen && frame===feed.querySelector('iframe[data-index="'+activeIndex+'"]')){
-      postMessage(frame,'unMute');
-    }
+    if(isOpen && frame===feed.querySelector('iframe[data-index="'+activeIndex+'"]'))postMessage(frame,'unMute');
   },delay));
 }
 function playOnly(index){
@@ -133,7 +144,6 @@ feed.addEventListener('scroll',()=>{
   },80);
 },{passive:true});
 
-/* Any direct interaction inside Doom Scroll is also used to re-request sound. */
 ['pointerdown','touchstart','click','keydown'].forEach(eventName=>{
   overlay.addEventListener(eventName,()=>{if(isOpen)requestFullSound(feed.querySelector('iframe[data-index="'+activeIndex+'"]'));},{passive:true});
 });
