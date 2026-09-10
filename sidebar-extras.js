@@ -20,7 +20,16 @@ function click(id){const e=document.getElementById(id);if(e){e.click();return tr
 function toast(text){let t=document.getElementById('dfExpToast');if(!t){t=document.createElement('div');t.id='dfExpToast';document.body.appendChild(t)}t.textContent=text;t.classList.add('show');clearTimeout(window.__dfExpToast);window.__dfExpToast=setTimeout(()=>t.classList.remove('show'),1600)}
 function action(type){
  if(type==='doom')return window.defgodqeDoomScrollOpen?.();
- if(type==='multiplayer')return window.defgodqeMultiplayer?.open?.();
+ if(type==='multiplayer'){
+   if(window.defgodqeMultiplayer?.open){window.defgodqeMultiplayer.open();return true}
+   toast('Loading Neon Tag…');
+   const start=Date.now();
+   const timer=setInterval(()=>{
+     if(window.defgodqeMultiplayer?.open){clearInterval(timer);window.defgodqeMultiplayer.open();return}
+     if(Date.now()-start>8000){clearInterval(timer);toast('Neon Tag is still loading — refresh once');}
+   },100);
+   return false;
+ }
  if(type==='games')return click('dfGameBtn');
  if(type==='voice')return click('voiceBtn');
  if(type==='web')return click('webBtn');
@@ -29,6 +38,6 @@ function action(type){
  if(type==='focus'){document.body.classList.toggle('df-focus-mode');toast(document.body.classList.contains('df-focus-mode')?'Focus mode on':'Focus mode off');return}
  if(type==='surprise'){const el=document.getElementById('input')||document.querySelector('textarea');if(el){const prompts=['Invent a crazy new feature for defgodqe.','Give me a futuristic game idea I can build.','Create an epic Minecraft challenge.','Design a new AI mode nobody has seen before.','Give me a project I can finish this weekend.'];el.focus();el.value=prompts[Math.floor(Math.random()*prompts.length)];el.dispatchEvent(new Event('input',{bubbles:true}));toast('Surprise prompt ready');}return}
 }
-function install(){if(document.getElementById('dfSidebarExperiences'))return true;const sidebar=document.getElementById('sidebar');if(!sidebar)return false;const user=sidebar.querySelector('#authRow')?.parentElement;if(!user)return false;const box=document.createElement('div');box.id='dfSidebarExperiences';box.innerHTML='<div class="df-exp-label">Explore</div><div class="df-exp-grid"></div>';const grid=box.querySelector('.df-exp-grid');items.forEach((x,i)=>{const b=document.createElement('button');b.className='df-exp-btn';b.type='button';b.title=x[1]+' — '+x[2];b.innerHTML='<span class="df-exp-icon">'+x[0]+'</span><span class="df-exp-text"><b>'+x[1]+'</b><small>'+x[2]+'</small></span>'+(i<3?'<span class="df-exp-hot">NEW</span>':'');b.onclick=()=>action(x[3]);grid.appendChild(b)});user.before(box);return true}
+function install(){if(document.getElementById('dfSidebarExperiences'))return true;const sidebar=document.getElementById('sidebar');if(!sidebar)return false;const user=sidebar.querySelector('#authRow')?.parentElement;if(!user)return false;const box=document.createElement('div');box.id='dfSidebarExperiences';box.innerHTML='<div class="df-exp-label">Explore</div><div class="df-exp-grid"></div>';const grid=box.querySelector('.df-exp-grid');items.forEach((x,i)=>{const b=document.createElement('button');b.className='df-exp-btn';b.type='button';b.title=x[1]+' — '+x[2];b.setAttribute('aria-label',x[1]);b.innerHTML='<span class="df-exp-icon">'+x[0]+'</span><span class="df-exp-text"><b>'+x[1]+'</b><small>'+x[2]+'</small></span>'+(i<3?'<span class="df-exp-hot">NEW</span>':'');b.onclick=()=>action(x[3]);grid.appendChild(b)});user.before(box);return true}
 if(!install()){const mo=new MutationObserver(()=>{if(install())mo.disconnect()});mo.observe(document.body,{childList:true,subtree:true})}
 })();
