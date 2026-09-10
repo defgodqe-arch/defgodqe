@@ -1,6 +1,7 @@
 /* defgodqe AI branding + launch animation */
 (() => {
   const LOGO = 'https://raw.githubusercontent.com/defgodqe-arch/defgodqe-ai/main/Screenshot_2026-02-27_164030.png';
+  const SITE_ICON = 'https://raw.githubusercontent.com/defgodqe-arch/defgodqe-ai/main/icon-192.png';
   const FALLBACK_LOGO = new URL('./icon.svg', document.baseURI).href;
 
   const logoFallback = (img) => {
@@ -107,7 +108,7 @@
     });
 
     document.querySelectorAll('.orb .df-brand-orb').forEach(img => img.remove());
-    document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(link => { link.href = FALLBACK_LOGO; });
+    document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]').forEach(link => { link.href = SITE_ICON; });
   }
 
   const hideLaunch = () => {
