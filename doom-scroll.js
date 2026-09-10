@@ -1,4 +1,4 @@
-/* defgodqe — Doom Scroll: optimized fullscreen vertical YouTube video feed */
+/* defgodqe — Doom Scroll: centered fullscreen vertical YouTube video feed */
 (function(){
 'use strict';
 if(window.__defgodqeDoomScroll)return;
@@ -16,12 +16,17 @@ const style=document.createElement('style');style.textContent=`
 #dfDoomFeed{position:absolute;inset:0;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y;contain:strict;-webkit-overflow-scrolling:touch}
 #dfDoomFeed::-webkit-scrollbar{display:none}
 .df-doom-card{height:100dvh;min-height:100dvh;width:100%;scroll-snap-align:start;background:#000;contain:strict}
-.df-doom-player{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:99991!important;background:#000;pointer-events:none!important;contain:strict}
-#dfDoomPlayer{display:block!important;width:100vw!important;height:100dvh!important;border:0!important;background:#000!important;pointer-events:none!important;visibility:visible!important;opacity:1!important;contain:strict}
-#dfDoomPlayer iframe{pointer-events:none!important}
+.df-doom-player{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:99991!important;background:#000;pointer-events:none!important;contain:strict;overflow:hidden}
+#dfDoomPlayer{position:relative!important;display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;border:0!important;background:#000!important;pointer-events:none!important;visibility:visible!important;opacity:1!important;contain:strict;overflow:hidden}
+#dfDoomPlayer iframe{position:absolute!important;top:50%!important;left:50%!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;transform:translate(-50%,-50%)!important;border:0!important;pointer-events:none!important}
 #dfDoomExit{position:fixed;top:18px;right:18px;z-index:100000;width:46px;height:46px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(15,15,20,.78);backdrop-filter:blur(12px);color:#fff;font-size:26px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.35);transition:transform .15s ease,background .15s ease}
 #dfDoomExit:hover{transform:scale(1.08);background:rgba(40,40,48,.9)}
 #dfDoomExit:active{transform:scale(.95)}
+@media (min-width:700px){
+  .df-doom-player{padding:0 24px!important}
+  #dfDoomPlayer{width:min(100%,100vw)!important;height:100%!important}
+  #dfDoomPlayer iframe{width:min(100%,100vw)!important}
+}
 `;
 document.head.appendChild(style);
 
@@ -32,11 +37,10 @@ document.body.appendChild(overlay);
 const feed=overlay.querySelector('#dfDoomFeed');
 const exitBtn=overlay.querySelector('#dfDoomExit');
 
-/* Only lightweight snap targets are created. The browser handles scrolling; no video
-   elements or players are created per card. */
 for(let i=0;i<VIDEO_COUNT;i++){
   const c=document.createElement('section');
   c.className='df-doom-card';
+  c.dataset.index=i;
   feed.appendChild(c);
 }
 
@@ -84,11 +88,7 @@ function loadActive(auto){
   const id=videoIdFor(activeIndex),token=++playToken;
   try{
     ytPlayer.loadVideoById(id);
-    if(auto){
-      setTimeout(()=>{
-        if(isOpen&&token===playToken&&ytPlayer)try{ytPlayer.playVideo();ytPlayer.unMute();ytPlayer.setVolume(100)}catch(_){}
-      },120);
-    }
+    if(auto)setTimeout(()=>{if(isOpen&&token===playToken&&ytPlayer)try{ytPlayer.playVideo();ytPlayer.unMute();ytPlayer.setVolume(100)}catch(_){}},120);
   }catch(_){}
 }
 function playAt(position,immediate){
@@ -103,7 +103,6 @@ function goToVideo(direction){
   if(!isOpen)return;
   const next=Math.max(0,Math.min(VIDEO_COUNT-1,activeIndex+direction));
   if(next===activeIndex)return;
-  /* Instant scroll is noticeably smoother than animating a full-screen snap target. */
   feed.scrollTop=next*Math.max(1,innerHeight);
   playAt(next,true);
 }
@@ -131,14 +130,10 @@ window.defgodqeDoomScrollOpen=open;
 window.defgodqeDoomScrollClose=close;
 exitBtn.addEventListener('click',close);
 
-/* Never call YouTube while the user is actively scrolling. Wait until scrolling settles. */
 feed.addEventListener('scroll',()=>{
   if(!isOpen)return;
   clearTimeout(scrollTimer);
-  scrollTimer=setTimeout(()=>{
-    const i=getIndex();
-    if(i!==activeIndex)playAt(i,true);
-  },140);
+  scrollTimer=setTimeout(()=>{const i=getIndex();if(i!==activeIndex)playAt(i,true)},140);
 },{passive:true});
 
 let wheelLocked=false;
