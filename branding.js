@@ -17,17 +17,15 @@
     <div class="df-launch-ring df-launch-ring-b"></div>
     <div class="df-launch-scan"></div>
     <div class="df-launch-core">
-      <div class="df-launch-logo-wrap">
-        <div class="df-launch-pulse"></div>
-        <img src="${LOGO}" alt="defgodqe" class="df-launch-logo" draggable="false">
+      <div class="df-launch-orb-wrap">
+        <div class="df-launch-orb-aura"></div>
+        <div class="df-launch-orb"></div>
+        <div class="df-launch-orb-glint"></div>
       </div>
       <div class="df-launch-title">DEFGODQE</div>
       <div class="df-launch-status"><span></span> INITIALIZING AI...</div>
     </div>`;
   document.documentElement.appendChild(launch);
-
-  const launchLogo = launch.querySelector('.df-launch-logo');
-  if (launchLogo) launchLogo.addEventListener('error', () => logoFallback(launchLogo), { once:true });
 
   const style = document.createElement('style');
   style.textContent = `
@@ -39,10 +37,14 @@
     .df-launch-ring-b { width:320px; height:320px; border-style:dashed; animation:dfSpinReverse 6s linear infinite; }
     .df-launch-scan { position:absolute; width:70vw; height:1px; background:linear-gradient(90deg,transparent,rgba(250,204,21,.5),transparent); box-shadow:0 0 18px rgba(250,204,21,.35); animation:dfScan 2.2s ease-in-out infinite; }
     .df-launch-core { position:relative; z-index:2; text-align:center; transform:translateY(10px); animation:dfCoreIn 1s cubic-bezier(.16,1,.3,1) forwards; }
-    .df-launch-logo-wrap { position:relative; width:118px; height:118px; margin:auto; border-radius:50%; display:grid; place-items:center; }
-    .df-launch-logo-wrap:before { content:""; position:absolute; inset:0; border-radius:50%; border:1px solid rgba(250,204,21,.6); box-shadow:0 0 70px rgba(250,204,21,.3),inset 0 0 30px rgba(250,204,21,.12); animation:dfPulse 1.4s ease-in-out infinite; }
-    .df-launch-pulse { position:absolute; inset:-18px; border:1px solid rgba(250,204,21,.15); border-radius:50%; animation:dfExpand 1.8s ease-out infinite; }
-    .df-launch-logo { width:84px; height:84px; object-fit:cover; border-radius:50%; position:relative; z-index:2; animation:dfLogoFloat 2s ease-in-out infinite; box-shadow:0 0 35px rgba(250,204,21,.35); }
+
+    .df-launch-orb-wrap { position:relative; width:118px; height:118px; margin:auto; display:grid; place-items:center; }
+    .df-launch-orb-aura { position:absolute; inset:-30px; border-radius:50%; background:radial-gradient(circle,rgba(250,204,21,.28) 0%,rgba(250,204,21,.12) 35%,transparent 70%); filter:blur(8px); animation:dfOrbAura 1.8s ease-in-out infinite; }
+    .df-launch-orb { position:relative; width:84px; height:84px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#fff8bd 0%,#fef08a 12%,#facc15 42%,#eab308 68%,#a16207 100%); border:1px solid rgba(255,244,150,.9); box-shadow:0 0 18px rgba(250,204,21,.85),0 0 45px rgba(250,204,21,.55),0 0 90px rgba(250,204,21,.3),inset -10px -12px 22px rgba(120,75,0,.25),inset 8px 8px 18px rgba(255,255,220,.38); animation:dfOrbFloat 2s ease-in-out infinite,dfOrbGlow 1.5s ease-in-out infinite; }
+    .df-launch-orb::before { content:""; position:absolute; inset:7px; border-radius:50%; border:1px solid rgba(255,255,210,.3); animation:dfOrbRing 2s linear infinite; }
+    .df-launch-orb::after { content:""; position:absolute; top:14px; left:20px; width:20px; height:10px; border-radius:50%; background:rgba(255,255,235,.72); filter:blur(5px); transform:rotate(-25deg); }
+    .df-launch-orb-glint { position:absolute; width:140px; height:140px; border-radius:50%; border:1px solid rgba(250,204,21,.22); animation:dfExpand 1.8s ease-out infinite; pointer-events:none; }
+
     .df-launch-title { margin-top:28px; font:800 24px/1 system-ui,sans-serif; letter-spacing:.45em; color:#fff; text-shadow:0 0 22px rgba(250,204,21,.45); }
     .df-launch-status { margin-top:12px; color:#94a3b8; font:500 11px/1 system-ui,sans-serif; letter-spacing:.18em; }
     .df-launch-status span { display:inline-block; width:6px; height:6px; margin-right:8px; border-radius:50%; background:#facc15; box-shadow:0 0 12px #facc15; animation:dfBlink 1s infinite; }
@@ -54,7 +56,7 @@
     .sidebar > div:first-child > div:first-child img { display:none !important; }
     .sidebar > div:first-child > div:first-child::after { content:"D"; position:absolute; inset:0; display:grid; place-items:center; color:#090b10; font:900 22px/1 system-ui,sans-serif; letter-spacing:-.06em; }
     .sidebar > div:first-child .text-sm { font-size:14px !important; letter-spacing:.01em; }
-    .sidebar > div:first-child .text-\[10px\] { color:#64748b !important; margin-top:2px; }
+    .sidebar > div:first-child .text-\\[10px\\] { color:#64748b !important; margin-top:2px; }
     #closeSidebar { width:32px; height:32px; display:grid; place-items:center; border-radius:10px; background:rgba(255,255,255,.04); }
     #closeSidebar:hover { background:rgba(250,204,21,.1); color:#facc15 !important; }
     #newChatBtn { height:48px; justify-content:center; border:1px solid rgba(250,204,21,.3) !important; background:linear-gradient(135deg,rgba(250,204,21,.16),rgba(250,204,21,.06)) !important; box-shadow:0 8px 28px rgba(250,204,21,.07); font-weight:700 !important; letter-spacing:.01em; transition:all .18s ease; }
@@ -80,9 +82,11 @@
     .orb { position:relative; }
 
     @keyframes dfCoreIn { from { opacity:0; transform:translateY(30px) scale(.92); filter:blur(10px); } to { opacity:1; transform:none; filter:none; } }
-    @keyframes dfPulse { 50% { transform:scale(1.12); opacity:.65; } }
+    @keyframes dfOrbFloat { 50% { transform:translateY(-5px) scale(1.035); } }
+    @keyframes dfOrbGlow { 0%,100% { filter:brightness(1); } 50% { filter:brightness(1.18); } }
+    @keyframes dfOrbAura { 0%,100% { transform:scale(.9); opacity:.65; } 50% { transform:scale(1.16); opacity:1; } }
+    @keyframes dfOrbRing { to { transform:rotate(360deg); } }
     @keyframes dfExpand { 0% { transform:scale(.7); opacity:.7; } 100% { transform:scale(1.25); opacity:0; } }
-    @keyframes dfLogoFloat { 50% { transform:translateY(-4px) scale(1.02); } }
     @keyframes dfSpin { to { transform:rotate(360deg); } }
     @keyframes dfSpinReverse { to { transform:rotate(-360deg); } }
     @keyframes dfGrid { to { transform:perspective(500px) rotateX(60deg) translateY(5%); } }
@@ -102,9 +106,7 @@
       }
     });
 
-    /* The main orb intentionally stays image-free. */
     document.querySelectorAll('.orb .df-brand-orb').forEach(img => img.remove());
-
     document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]').forEach(link => { link.href = FALLBACK_LOGO; });
   }
 
