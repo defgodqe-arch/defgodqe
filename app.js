@@ -38,3 +38,5 @@ import './direct-messages.js';
 import './ui-theme.js';
 import './old-look-shell.js';
 import './qwen-tts-local.js';
+import './comfyui-ai.js';
+import './game-sidebar.js';
